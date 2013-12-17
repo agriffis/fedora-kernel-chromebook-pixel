@@ -62,19 +62,19 @@ Summary: The Linux kernel
 # For non-released -rc kernels, this will be appended after the rcX and
 # gitX tags, so a 3 here would become part of release "0.rcX.gitX.3"
 #
-%global baserelease 300
+%global baserelease 301
 %global fedora_build %{baserelease}
 
 # base_sublevel is the kernel version we're starting with and patching
 # on top of -- for example, 3.1-rc7-git1 starts with a 3.0 base,
 # which yields a base_sublevel of 0.
-%define base_sublevel 11
+%define base_sublevel 12
 
 ## If this is a released kernel ##
 %if 0%{?released_kernel}
 
 # Do we have a -stable update to apply?
-%define stable_update 8
+%define stable_update 5
 # Is it a -stable RC?
 %define stable_rc 0
 # Set rpm version accordingly
@@ -493,13 +493,13 @@ ExclusiveOS: Linux
 #
 # List the packages used during the kernel build
 #
-BuildRequires: module-init-tools, patch >= 2.5.4, bash >= 2.03, sh-utils, tar
-BuildRequires: bzip2, xz, findutils, gzip, m4, perl, perl-Carp, make >= 3.78, diffutils, gawk
-BuildRequires: gcc >= 3.4.2, binutils >= 2.12, redhat-rpm-config, hmaccalc
+BuildRequires: kmod, patch, bash, sh-utils, tar
+BuildRequires: bzip2, xz, findutils, gzip, m4, perl, perl-Carp, make, diffutils, gawk
+BuildRequires: gcc, binutils, redhat-rpm-config, hmaccalc
 BuildRequires: net-tools, hostname, bc
 BuildRequires: xmlto, asciidoc
 %if %{with_sparse}
-BuildRequires: sparse >= 0.4.1
+BuildRequires: sparse
 %endif
 %if %{with_perf}
 BuildRequires: elfutils-devel zlib-devel binutils-devel newt-devel python-devel perl(ExtUtils::Embed) bison
@@ -510,11 +510,7 @@ BuildRequires: pciutils-devel gettext
 %endif
 BuildConflicts: rhbuildsys(DiskFree) < 500Mb
 %if %{with_debuginfo}
-# Fancy new debuginfo generation introduced in Fedora 8/RHEL 6.
-# The -r flag to find-debuginfo.sh invokes eu-strip --reloc-debug-sections
-# which reduces the number of relocations in kernel module .ko.debug files and
-# was introduced with rpm 4.9 and elfutils 0.153.
-BuildRequires: rpm-build >= 4.9.0-1, elfutils >= elfutils-0.153-1
+BuildRequires: rpm-build, elfutils
 %define debuginfo_args --strict-build-id -r
 %endif
 
@@ -543,6 +539,7 @@ Source20: Makefile.config
 Source21: config-debug
 Source22: config-nodebug
 Source23: config-generic
+Source24: config-no-extra
 
 Source30: config-x86-generic
 Source31: config-i686-PAE
@@ -624,15 +621,6 @@ Patch09: upstream-reverts.patch
 
 # Standalone patches
 
-#drop with next rebase
-Patch100: taint-vbox.patch
-
-#drop with next rebase
-Patch110: vmbugon-warnon.patch
-
-#drop with next rebase
-Patch201: debug-bad-pte-modules.patch
-
 Patch390: defaults-acpi-video.patch
 Patch396: acpi-sony-nonvs-blacklist.patch
 
@@ -646,6 +634,8 @@ Patch470: die-floppy-die.patch
 Patch510: silence-noise.patch
 Patch530: silence-fbcon-logo.patch
 
+Patch600: x86-allow-1024-cpus.patch
+
 Patch800: crash-driver.patch
 
 # crypto/
@@ -654,7 +644,7 @@ Patch800: crash-driver.patch
 Patch900: keys-expand-keyring.patch
 Patch901: keys-krb-support.patch
 Patch902: keys-x509-improv.patch
-Patch903: keyring-quota.patch
+Patch903: keys-fixes.patch
 
 # secure boot
 Patch1000: secure-modules.patch
@@ -668,18 +658,11 @@ Patch1003: sysrq-secure-boot.patch
 
 # nouveau + drm fixes
 # intel drm is all merged upstream
-Patch1824: drm-intel-next.patch
 Patch1825: drm-i915-dp-stfu.patch
-Patch1826: drm-i915-hush-check-crtc-state.patch
 
 # Quiet boot fixes
 # silence the ACPI blacklist code
 Patch2802: silence-acpi-blacklist.patch
-
-# media patches
-Patch2899: v4l-dvb-fixes.patch
-Patch2900: v4l-dvb-update.patch
-Patch2901: v4l-dvb-experimental.patch
 
 # fs fixes
 
@@ -703,8 +686,6 @@ Patch15000: nowatchdog-on-virt.patch
 # lpae
 Patch21001: arm-lpae-ax88796.patch
 Patch21004: arm-sound-soc-samsung-dma-avoid-another-64bit-division.patch
-Patch21005: arm-exynos-mp.patch
-Patch21006: arm-highbank-for-3.12.patch
 
 # ARM omap
 Patch21010: arm-omap-load-tfp410.patch
@@ -712,12 +693,17 @@ Patch21010: arm-omap-load-tfp410.patch
 # ARM tegra
 Patch21020: arm-tegra-usb-no-reset-linux33.patch
 
-# ARM wandboard
-Patch21030: arm-wandboard-quad.patch
-# https://git.kernel.org/cgit/linux/kernel/git/broonie/sound.git/patch/?id=3f1a91aa25579ba5e7268a47a73d2a83e4802c62
+# ARM i.MX6
+# http://www.spinics.net/lists/devicetree/msg08276.html
+Patch21025: arm-imx6-utilite.patch
 
-# AM33xx
-Patch21100: am335x-bone.patch
+# am33xx (BeagleBone)
+# https://github.com/beagleboard/kernel
+# Pulled primarily from the above git repo. First patch is all in arm-soc
+# scheduled for 3.13. The others should be landing via other trees
+Patch21030: arm-am33xx-arm-soc-upstream.patch
+Patch21031: arm-am33xx-bblack.patch
+Patch21032: arm-am33xx-cpsw.patch
 
 #rhbz 754518
 Patch21235: scsi-sd_revalidate_disk-prevent-NULL-ptr-deref.patch
@@ -730,45 +716,9 @@ Patch21247: ath9k_rx_dma_stop_check.patch
 
 Patch22000: weird-root-dentry-name-debug.patch
 
-#rhbz 927469
-Patch23006: fix-child-thread-introspection.patch
-
 Patch25047: drm-radeon-Disable-writeback-by-default-on-ppc.patch
 
-#rhbz 977040
-Patch25056: iwl3945-better-skb-management-in-rx-path.patch
-Patch25057: iwl4965-better-skb-management-in-rx-path.patch
-
-#rhbz 963715
-Patch25077: media-cx23885-Fix-TeVii-S471-regression-since-introduction-of-ts2020.patch
-
-#CVE-2013-4345 rhbz 1007690 1009136
-Patch25104: ansi_cprng-Fix-off-by-one-error-in-non-block-size-request.patch
-
-#rhbz 985522
-Patch25107: ntp-Make-periodic-RTC-update-more-reliable.patch
-
-#rhbz 971893
-Patch25109: bonding-driver-alb-learning.patch
-
-#rhbz 902012
-Patch25114: elevator-Fix-a-race-in-elevator-switching-and-md.patch
-Patch25115: elevator-acquire-q-sysfs_lock-in-elevator_change.patch
-
-#rhbz 974072
-Patch25117: rt2800-add-support-for-rf3070.patch
-
-#rhbz 1015989
-Patch25122: netfilter-nf_conntrack-use-RCU-safe-kfree-for-conntr.patch
-
-#rhbz 982153
-Patch25123: iommu-Remove-stack-trace-from-broken-irq-remapping-warning.patch
-
-#rhbz 998732
-Patch25125: vfio-iommu-Fixed-interaction-of-VFIO_IOMMU_MAP_DMA.patch
-
 #rhbz 896695
-Patch25126: 0001-iwlwifi-don-t-WARN-on-host-commands-sent-when-firmwa.patch
 Patch25127: 0002-iwlwifi-don-t-WARN-on-bad-firmware-state.patch
 
 #rhbz 993744
@@ -777,33 +727,37 @@ Patch25128: dm-cache-policy-mq_fix-large-scale-table-allocation-bug.patch
 #rhbz 1000439
 Patch25129: cpupower-Fix-segfault-due-to-incorrect-getopt_long-a.patch
 
-#rhbz 1010679
-Patch25130: fix-radeon-sound.patch
+Patch25140: drm-qxl-backport-fixes-for-Fedora.patch
 
-#rhbz 1011714
-Patch25131: btrfs-relocate-csums-properly-with-prealloc-ext.patch
+#rhbz 1011362
+Patch25148: alx-Reset-phy-speed-after-resume.patch
 
-#rhbz 984696
-Patch25132: rt2800usb-slow-down-TX-status-polling.patch
+# Fix 15sec NFS mount delay
+Patch25152: sunrpc-create-a-new-dummy-pipe-for-gssd-to-hold-open.patch
+Patch25153: sunrpc-replace-gssd_running-with-more-reliable-check.patch
+Patch25154: nfs-check-gssd-running-before-krb5i-auth.patch
 
-#rhbz 1023413
-Patch25135: alps-Support-for-Dell-XT2-model.patch
+#CVE-2013-6382 rhbz 1033603 1034670
+Patch25157: xfs-underflow-bug-in-xfs_attrlist_by_handle.patch
 
-#rhbz 1011621
-Patch25137: cifs-Allow-LANMAN-auth-for-unencapsulated-auth-methods.patch
+#rhbz 958826
+Patch25164: dell-laptop.patch
 
-#rhbz 995782
-Patch25138: intel-3.12-stable-fixes.patch
+#rhbz 1030802
+Patch25170: Input-elantech-add-support-for-newer-August-2013-dev.patch
+Patch25171: elantech-Properly-differentiate-between-clickpads-an.patch
 
-#CVE-2013-4348 rhbz 1007939 1025647
-Patch25139: net-flow_dissector-fail-on-evil-iph-ihl.patch
+#CVE-2013-6367 rhbz 1032207 1042081
+Patch25172: KVM-x86-Fix-potential-divide-by-0-in-lapic.patch
 
-#rhbz 1025769
-Patch25142: iwlwifi-dvm-dont-override-mac80211-queue-setting.patch
+#CVE-2013-6368 rhbz 1032210 1042090
+Patch25173: KVM-x86-Convert-vapic-synchronization-to-_cached-functions.patch
 
-Patch25143: drm-qxl-backport-fixes-for-Fedora.patch
+#CVE-2013-6376 rhbz 1033106 1042099
+Patch25174: KVM-x86-fix-guest-initiated-crash-with-x2apic.patch
 
-Patch25144: Input-evdev-fall-back-to-vmalloc-for-client-event-buffer.patch
+#CVE-2013-4587 rhbz 1030986 1042071
+Patch25175: KVM-Improve-create-VCPU-parameter.patch
 
 # END OF PATCH DEFINITIONS
 
@@ -1348,17 +1302,9 @@ ApplyOptionalPatch compile-fixes.patch
 # revert patches from upstream that conflict or that we get via other means
 ApplyOptionalPatch upstream-reverts.patch -R
 
-#drop with next rebase
-ApplyPatch taint-vbox.patch
-
-#drop with next rebase
-ApplyPatch vmbugon-warnon.patch
-
-#drop with next rebase
-ApplyPatch debug-bad-pte-modules.patch
-
 # Architecture patches
 # x86(-64)
+ApplyPatch x86-allow-1024-cpus.patch
 
 # ARM64
 
@@ -1367,14 +1313,13 @@ ApplyPatch debug-bad-pte-modules.patch
 #
 ApplyPatch arm-lpae-ax88796.patch
 ApplyPatch arm-sound-soc-samsung-dma-avoid-another-64bit-division.patch
-ApplyPatch arm-exynos-mp.patch
-ApplyPatch arm-highbank-for-3.12.patch
 ApplyPatch arm-omap-load-tfp410.patch
 ApplyPatch arm-tegra-usb-no-reset-linux33.patch
-ApplyPatch arm-wandboard-quad.patch
+ApplyPatch arm-imx6-utilite.patch
 
-# Fix OMAP and AM33xx (BeagleBone)
-ApplyPatch am335x-bone.patch
+ApplyPatch arm-am33xx-arm-soc-upstream.patch
+ApplyPatch arm-am33xx-bblack.patch
+ApplyPatch arm-am33xx-cpsw.patch
 
 #
 # bugfixes to drivers and filesystems
@@ -1442,7 +1387,7 @@ ApplyPatch crash-driver.patch
 ApplyPatch keys-expand-keyring.patch
 ApplyPatch keys-krb-support.patch
 ApplyPatch keys-x509-improv.patch
-ApplyPatch keyring-quota.patch
+ApplyPatch keys-fixes.patch
 
 # secure boot
 ApplyPatch secure-modules.patch
@@ -1457,20 +1402,12 @@ ApplyPatch sysrq-secure-boot.patch
 # Nouveau DRM
 
 # Intel DRM
-ApplyOptionalPatch drm-intel-next.patch
 ApplyPatch drm-i915-dp-stfu.patch
-ApplyPatch drm-i915-hush-check-crtc-state.patch
 
 # Radeon DRM
 
 # silence the ACPI blacklist code
 ApplyPatch silence-acpi-blacklist.patch
-
-# V4L/DVB updates/fixes/experimental drivers
-#  apply if non-empty
-ApplyOptionalPatch v4l-dvb-fixes.patch
-ApplyOptionalPatch v4l-dvb-update.patch
-ApplyOptionalPatch v4l-dvb-experimental.patch
 
 # Patches headed upstream
 ApplyPatch fs-proc-devtree-remove_proc_entry.patch
@@ -1488,7 +1425,7 @@ ApplyPatch nowatchdog-on-virt.patch
 #rhbz 754518
 ApplyPatch scsi-sd_revalidate_disk-prevent-NULL-ptr-deref.patch
 
-ApplyPatch weird-root-dentry-name-debug.patch
+#pplyPatch weird-root-dentry-name-debug.patch
 
 # https://fedoraproject.org/wiki/Features/Checkpoint_Restore
 ApplyPatch criu-no-expert.patch
@@ -1496,45 +1433,9 @@ ApplyPatch criu-no-expert.patch
 #rhbz 892811
 ApplyPatch ath9k_rx_dma_stop_check.patch
 
-#rhbz 927469
-ApplyPatch fix-child-thread-introspection.patch
-
 ApplyPatch drm-radeon-Disable-writeback-by-default-on-ppc.patch
 
-#rhbz 977040
-ApplyPatch iwl3945-better-skb-management-in-rx-path.patch
-ApplyPatch iwl4965-better-skb-management-in-rx-path.patch
-
-#rhbz 963715
-ApplyPatch media-cx23885-Fix-TeVii-S471-regression-since-introduction-of-ts2020.patch
-
-#CVE-2013-4345 rhbz 1007690 1009136
-ApplyPatch ansi_cprng-Fix-off-by-one-error-in-non-block-size-request.patch
-
-#rhbz 985522
-ApplyPatch ntp-Make-periodic-RTC-update-more-reliable.patch
-
-#rhbz 971893
-ApplyPatch bonding-driver-alb-learning.patch
-
-#rhbz 902012
-ApplyPatch elevator-Fix-a-race-in-elevator-switching-and-md.patch
-ApplyPatch elevator-acquire-q-sysfs_lock-in-elevator_change.patch
-
-#rhbz 974072
-ApplyPatch rt2800-add-support-for-rf3070.patch
-
-#rhbz 1015989
-ApplyPatch netfilter-nf_conntrack-use-RCU-safe-kfree-for-conntr.patch
-
-#rhbz 982153
-ApplyPatch iommu-Remove-stack-trace-from-broken-irq-remapping-warning.patch
-
-#rhbz 998732
-ApplyPatch vfio-iommu-Fixed-interaction-of-VFIO_IOMMU_MAP_DMA.patch
-
 #rhbz 896695
-ApplyPatch 0001-iwlwifi-don-t-WARN-on-host-commands-sent-when-firmwa.patch
 ApplyPatch 0002-iwlwifi-don-t-WARN-on-bad-firmware-state.patch
 
 #rhbz 993744
@@ -1543,33 +1444,37 @@ ApplyPatch dm-cache-policy-mq_fix-large-scale-table-allocation-bug.patch
 #rhbz 1000439
 ApplyPatch cpupower-Fix-segfault-due-to-incorrect-getopt_long-a.patch
 
-#rhbz 1010679
-ApplyPatch fix-radeon-sound.patch
-
-#rhbz 1011714
-ApplyPatch btrfs-relocate-csums-properly-with-prealloc-ext.patch
-
-#rhbz 984696
-ApplyPatch rt2800usb-slow-down-TX-status-polling.patch
-
-#rhbz 1023413
-ApplyPatch alps-Support-for-Dell-XT2-model.patch
-
-#rhbz 1011621
-ApplyPatch cifs-Allow-LANMAN-auth-for-unencapsulated-auth-methods.patch
-
-#rhbz 995782
-ApplyPatch intel-3.12-stable-fixes.patch
-
-#CVE-2013-4348 rhbz 1007939 1025647
-ApplyPatch net-flow_dissector-fail-on-evil-iph-ihl.patch
-
-#rhbz 1025769
-ApplyPatch iwlwifi-dvm-dont-override-mac80211-queue-setting.patch
-
 ApplyPatch drm-qxl-backport-fixes-for-Fedora.patch
 
-ApplyPatch Input-evdev-fall-back-to-vmalloc-for-client-event-buffer.patch
+#rhbz 1011362
+ApplyPatch alx-Reset-phy-speed-after-resume.patch
+
+# Fix 15sec NFS mount delay
+ApplyPatch sunrpc-create-a-new-dummy-pipe-for-gssd-to-hold-open.patch
+ApplyPatch sunrpc-replace-gssd_running-with-more-reliable-check.patch
+ApplyPatch nfs-check-gssd-running-before-krb5i-auth.patch
+
+#CVE-2013-6382 rhbz 1033603 1034670
+ApplyPatch xfs-underflow-bug-in-xfs_attrlist_by_handle.patch
+
+#rhbz 958826
+ApplyPatch dell-laptop.patch
+
+#rhbz 1030802
+ApplyPatch Input-elantech-add-support-for-newer-August-2013-dev.patch
+ApplyPatch elantech-Properly-differentiate-between-clickpads-an.patch
+
+#CVE-2013-6367 rhbz 1032207 1042081
+ApplyPatch KVM-x86-Fix-potential-divide-by-0-in-lapic.patch
+
+#CVE-2013-6368 rhbz 1032210 1042090
+ApplyPatch KVM-x86-Convert-vapic-synchronization-to-_cached-functions.patch
+
+#CVE-2013-6376 rhbz 1033106 1042099
+ApplyPatch KVM-x86-fix-guest-initiated-crash-with-x2apic.patch
+
+#CVE-2013-4587 rhbz 1030986 1042071
+ApplyPatch KVM-Improve-create-VCPU-parameter.patch
 
 # END OF PATCH APPLICATIONS
 
@@ -1925,7 +1830,7 @@ BuildKernel %make_target %kernel_image smp
 %endif
 
 %global perf_make \
-  make -s %{?cross_opts} %{?_smp_mflags} -C tools/perf V=1 WERROR=0 NO_LIBUNWIND=1 HAVE_CPLUS_DEMANGLE=1 NO_GTK2=1 NO_LIBNUMA=1 NO_STRLCPY=1 prefix=%{_prefix}
+  make -s %{?cross_opts} %{?_smp_mflags} -C tools/perf V=1 WERROR=0 NO_LIBUNWIND=1 HAVE_CPLUS_DEMANGLE=1 NO_GTK2=1 NO_LIBNUMA=1 NO_STRLCPY=1 NO_BIONIC=1 prefix=%{_prefix}
 %if %{with_perf}
 # perf
 %{perf_make} all
@@ -2375,6 +2280,71 @@ fi
 #                 ||----w |
 #                 ||     ||
 %changelog
+* Fri Dec 13 2013 Josh Boyer <jwboyer@fedoraproject.org> 3.12.5-301
+- More keys fixes from upstream to fix keyctl_get_persisent crash (rhbz 1043033)
+
+* Fri Dec 13 2013 Justin M. Forbes <jforbes@fedoraproject.org - 3.12.5-300
+- Linux v3.12.5 rebase
+
+* Thu Dec 12 2013 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2013-4587 kvm: out-of-bounds access (rhbz 1030986 1042071)
+- CVE-2013-6376 kvm: BUG_ON in apic_cluster_id (rhbz 1033106 1042099)
+- CVE-2013-6368 kvm: cross page vapic_addr access (rhbz 1032210 1042090)
+- CVE-2013-6367 kvm: division by 0 in apic_get_tmcct (rhbz 1032207 1042081)
+
+* Wed Dec 11 2013 Josh Boyer <jwboyer@fedoraproject.org>
+- Add patches to support ETPS/2 Elantech touchpads (rhbz 1030802)
+
+* Tue Dec 10 2013 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2013-XXXX net: memory leak in recvmsg (rhbz 1039845 1039874)
+
+* Fri Dec  6 2013 Peter Robinson <pbrobinson@fedoraproject.org>
+- Fix up ARM usb gadget config to make it useful
+
+* Wed Dec 04 2013 Josh Boyer <jwboyer@fedoraproject.org>
+- Add various fixes for keys crashes and an SELinux issue (rhbz 1035000)
+
+* Tue Dec 03 2013 Josh Boyer <jwboyer@fedoraproject.org>
+- Add patches to fix rfkill switch on Dell machines (rhbz 958826)
+
+* Mon Dec 02 2013 Josh Boyer <jwboyer@fedoraproject.org>
+- Fix crash driver build and re-enable on s390x (from Dan Horák)
+
+* Sat Nov 30 2013 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2013-6405 net: leak of uninited mem to userspace via recv syscalls (rhbz 1035875 1035887)
+
+* Fri Nov 29 2013 Josh Boyer <jwboyer@fedoraproject.org> - 3.11.10-300
+- Linux v3.11.10
+- Fix memory leak in qxl (from Dave Airlie)
+
+* Tue Nov 26 2013 Josh Boyer <jwboyer@fedoraproject.org>
+- Add patch to fix usbnet URB handling (rhbz 998342)
+- Fix crash in via-velocity driver (rhbz 1022733)
+- CVE-2013-6382 xfs: missing check for ZERO_SIZE_PTR (rhbz 1033603 1034670)
+
+* Mon Nov 25 2013 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2013-6380 aacraid: invalid pointer dereference (rhbz 1033593 1034304)
+- CVE-2013-6378 libertas: potential oops in debugfs (rhbz 1033578 1034183)
+
+* Fri Nov 22 2013 Josh Boyer <jwboyer@fedoraproject.org>
+- Add patches from Jeff Layton to fix 15sec NFS mount hang
+
+* Wed Nov 20 2013 Josh Boyer <jwboyer@fedoraproject.org> - 3.11.9-300
+- Linux v3.11.9
+
+* Tue Nov 19 2013 Josh Boyer <jwboyer@fedoraproject.org>
+- Enable CGROUP_HUGETLB on ppc64/ppc64p7 and x86_64 (rhbz 1031984)
+
+* Mon Nov 18 2013 Josh Boyer <jwboyer@fedoraproject.org>
+- Add patch to fix rhel5.9 KVM guests (rhbz 967652)
+- Add patch to fix crash from slab when using md-raid mirrors (rhbz 1031086)
+- Add patches from Pierre Ossman to fix 24Hz/24p radeon audio (rhbz 1010679)
+- Add patch to fix ALX phy issues after resume (rhbz 1011362)
+- Fix ipv6 sit panic with packet size > mtu (from Michele Baldessari) (rbhz 1015905)
+
+* Thu Nov 14 2013 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2013-4563: net: large udp packet over IPv6 over UFO-enabled device with TBF qdisc panic (rhbz 1030015 1030017)
+
 * Wed Nov 13 2013 Justin M. Forbes <jforbes@fedoraproject.org> - 3.11.8-300
 - Linux v3.11.8
 
