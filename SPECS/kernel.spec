@@ -31,7 +31,7 @@ Summary: The Linux kernel
 #
 # (Uncomment the '#' and both spaces below to set the buildid.)
 #
-# % define buildid .local
+%define buildid .pixel
 ###################################################################
 
 # The buildid can also be specified on the rpmbuild command line
@@ -807,6 +807,9 @@ Patch25144: Input-evdev-fall-back-to-vmalloc-for-client-event-buffer.patch
 
 # END OF PATCH DEFINITIONS
 
+# pixel patches
+Patch99999: 0001-Simulate-fake-Fn-key-on-PS-2-keyboards-w-o-one-eg.-C.patch
+
 %endif
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
@@ -1569,6 +1572,8 @@ ApplyPatch drm-qxl-backport-fixes-for-Fedora.patch
 ApplyPatch Input-evdev-fall-back-to-vmalloc-for-client-event-buffer.patch
 
 # END OF PATCH APPLICATIONS
+
+ApplyPatch 0001-Simulate-fake-Fn-key-on-PS-2-keyboards-w-o-one-eg.-C.patch
 
 %endif
 
