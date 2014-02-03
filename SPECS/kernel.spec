@@ -74,7 +74,7 @@ Summary: The Linux kernel
 %if 0%{?released_kernel}
 
 # Do we have a -stable update to apply?
-%define stable_update 5
+%define stable_update 9
 # Is it a -stable RC?
 %define stable_rc 0
 # Set rpm version accordingly
@@ -622,7 +622,6 @@ Patch09: upstream-reverts.patch
 # Standalone patches
 
 Patch390: defaults-acpi-video.patch
-Patch396: acpi-sony-nonvs-blacklist.patch
 
 Patch450: input-kill-stupid-messages.patch
 Patch452: no-pcspkr-modalias.patch
@@ -658,7 +657,6 @@ Patch1003: sysrq-secure-boot.patch
 
 # nouveau + drm fixes
 # intel drm is all merged upstream
-Patch1825: drm-i915-dp-stfu.patch
 
 # Quiet boot fixes
 # silence the ACPI blacklist code
@@ -724,9 +722,6 @@ Patch25127: 0002-iwlwifi-don-t-WARN-on-bad-firmware-state.patch
 #rhbz 993744
 Patch25128: dm-cache-policy-mq_fix-large-scale-table-allocation-bug.patch
 
-#rhbz 1000439
-Patch25129: cpupower-Fix-segfault-due-to-incorrect-getopt_long-a.patch
-
 Patch25140: drm-qxl-backport-fixes-for-Fedora.patch
 
 #rhbz 1011362
@@ -736,28 +731,39 @@ Patch25148: alx-Reset-phy-speed-after-resume.patch
 Patch25152: sunrpc-create-a-new-dummy-pipe-for-gssd-to-hold-open.patch
 Patch25153: sunrpc-replace-gssd_running-with-more-reliable-check.patch
 Patch25154: nfs-check-gssd-running-before-krb5i-auth.patch
-
-#CVE-2013-6382 rhbz 1033603 1034670
-Patch25157: xfs-underflow-bug-in-xfs_attrlist_by_handle.patch
+#rhbz 1037793
+Patch25166: sunrpc-add-an-info-file-for-the-dummy-gssd-pipe.patch
+Patch25167: rpc_pipe-remove-the-clntXX-dir-if-creating-the-pipe-fails.patch
+Patch25168: rpc_pipe-fix-cleanup-of-dummy-gssd-directory-when-notification-fails.patch
 
 #rhbz 958826
 Patch25164: dell-laptop.patch
 
 #rhbz 1030802
-Patch25170: Input-elantech-add-support-for-newer-August-2013-dev.patch
 Patch25171: elantech-Properly-differentiate-between-clickpads-an.patch
 
-#CVE-2013-6367 rhbz 1032207 1042081
-Patch25172: KVM-x86-Fix-potential-divide-by-0-in-lapic.patch
+#rhbz 924916
+Patch25179: KVM-MMU-handle-invalid-root_hpa-at-__direct_map.patch
 
-#CVE-2013-6368 rhbz 1032210 1042090
-Patch25173: KVM-x86-Convert-vapic-synchronization-to-_cached-functions.patch
+#rhbz 1047892
+Patch25180: KVM-VMX-fix-use-after-free-of-vmx-loaded_vmcs.patch
 
-#CVE-2013-6376 rhbz 1033106 1042099
-Patch25174: KVM-x86-fix-guest-initiated-crash-with-x2apic.patch
+#rhbz 1044471
+Patch25181: tg3-Add-support-for-new-577xx-device-ids.patch
 
-#CVE-2013-4587 rhbz 1030986 1042071
-Patch25175: KVM-Improve-create-VCPU-parameter.patch
+#rhbz 953211
+Patch25182: Input-ALPS-add-support-for-Dolphin-devices.patch
+
+#rhbz 1056711
+Patch25183: ipv6-introduce-IFA_F_NOPREFIXROUTE-and-IFA_F_MANAGETEMPADDR-flags.patch
+Patch25155: ipv6-addrconf-revert-if_inet6ifa_flag-format.patch
+
+#rhbz 1057533
+Patch25184: i915-remove-pm_qos-request-on-error.patch
+
+#rhbz 990955
+Patch25185: ath9k_htc-make-sta_rc_update-atomic-for-most-calls.patch
+
 
 # END OF PATCH DEFINITIONS
 
@@ -959,10 +965,10 @@ against the %{?2:%{2} }kernel package.\
 Summary: Extra kernel modules to match the %{?2:%{2} }kernel\
 Group: System Environment/Kernel\
 Provides: kernel%{?1:-%{1}}-modules-extra-%{_target_cpu} = %{version}-%{release}\
-Provides: kernel-modules-extra-%{_target_cpu} = %{version}-%{release}%{?1:+%{1}}\
-Provides: kernel-modules-extra = %{version}-%{release}%{?1:+%{1}}\
+Provides: kernel%{?1:-%{1}}-modules-extra-%{_target_cpu} = %{version}-%{release}%{?1:+%{1}}\
+Provides: kernel%{?1:-%{1}}-modules-extra = %{version}-%{release}%{?1:+%{1}}\
 Provides: installonlypkg(kernel-module)\
-Provides: kernel-modules-extra-uname-r = %{KVERREL}%{?1:+%{1}}\
+Provides: kernel%{?1:-%{1}}-modules-extra-uname-r = %{KVERREL}%{?1:+%{1}}\
 Requires: kernel-uname-r = %{KVERREL}%{?1:+%{1}}\
 AutoReqProv: no\
 %description -n kernel%{?variant}%{?1:-%{1}}-modules-extra\
@@ -1338,7 +1344,6 @@ ApplyPatch arm-am33xx-cpsw.patch
 
 # ACPI
 ApplyPatch defaults-acpi-video.patch
-ApplyPatch acpi-sony-nonvs-blacklist.patch
 
 #
 # PCI
@@ -1399,7 +1404,6 @@ ApplyPatch sysrq-secure-boot.patch
 # Nouveau DRM
 
 # Intel DRM
-ApplyPatch drm-i915-dp-stfu.patch
 
 # Radeon DRM
 
@@ -1438,9 +1442,6 @@ ApplyPatch 0002-iwlwifi-don-t-WARN-on-bad-firmware-state.patch
 #rhbz 993744
 ApplyPatch dm-cache-policy-mq_fix-large-scale-table-allocation-bug.patch
 
-#rhbz 1000439
-ApplyPatch cpupower-Fix-segfault-due-to-incorrect-getopt_long-a.patch
-
 ApplyPatch drm-qxl-backport-fixes-for-Fedora.patch
 
 #rhbz 1011362
@@ -1450,28 +1451,38 @@ ApplyPatch alx-Reset-phy-speed-after-resume.patch
 ApplyPatch sunrpc-create-a-new-dummy-pipe-for-gssd-to-hold-open.patch
 ApplyPatch sunrpc-replace-gssd_running-with-more-reliable-check.patch
 ApplyPatch nfs-check-gssd-running-before-krb5i-auth.patch
-
-#CVE-2013-6382 rhbz 1033603 1034670
-ApplyPatch xfs-underflow-bug-in-xfs_attrlist_by_handle.patch
+#rhbz 1037793
+ApplyPatch rpc_pipe-remove-the-clntXX-dir-if-creating-the-pipe-fails.patch
+ApplyPatch sunrpc-add-an-info-file-for-the-dummy-gssd-pipe.patch
+ApplyPatch rpc_pipe-fix-cleanup-of-dummy-gssd-directory-when-notification-fails.patch
 
 #rhbz 958826
 ApplyPatch dell-laptop.patch
 
 #rhbz 1030802
-ApplyPatch Input-elantech-add-support-for-newer-August-2013-dev.patch
 ApplyPatch elantech-Properly-differentiate-between-clickpads-an.patch
 
-#CVE-2013-6367 rhbz 1032207 1042081
-ApplyPatch KVM-x86-Fix-potential-divide-by-0-in-lapic.patch
+#rhbz 924916
+ApplyPatch KVM-MMU-handle-invalid-root_hpa-at-__direct_map.patch
 
-#CVE-2013-6368 rhbz 1032210 1042090
-ApplyPatch KVM-x86-Convert-vapic-synchronization-to-_cached-functions.patch
+#rhbz 1047892
+ApplyPatch KVM-VMX-fix-use-after-free-of-vmx-loaded_vmcs.patch
 
-#CVE-2013-6376 rhbz 1033106 1042099
-ApplyPatch KVM-x86-fix-guest-initiated-crash-with-x2apic.patch
+#rhbz 1044471
+ApplyPatch tg3-Add-support-for-new-577xx-device-ids.patch
 
-#CVE-2013-4587 rhbz 1030986 1042071
-ApplyPatch KVM-Improve-create-VCPU-parameter.patch
+#rhbz 953211
+ApplyPatch Input-ALPS-add-support-for-Dolphin-devices.patch
+
+#rhbz 1056711
+ApplyPatch ipv6-introduce-IFA_F_NOPREFIXROUTE-and-IFA_F_MANAGETEMPADDR-flags.patch
+ApplyPatch ipv6-addrconf-revert-if_inet6ifa_flag-format.patch
+
+#rhbz 1057533
+ApplyPatch i915-remove-pm_qos-request-on-error.patch
+
+#rhbz 990955
+ApplyPatch ath9k_htc-make-sta_rc_update-atomic-for-most-calls.patch
 
 # END OF PATCH APPLICATIONS
 
@@ -2275,6 +2286,70 @@ fi
 #                 ||----w |
 #                 ||     ||
 %changelog
+* Wed Jan 29 2014 Justin M. Forbes <jforbes@fedoraproject.org> - 3.12.9-301
+- ipv6 addrconf: revert /proc/net/if_inet6 ifa_flag format (rhbz 1056711)
+
+* Tue Jan 28 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Add patch from Stanislaw Gruszka to fix ath9k BUG (rhbz 990955)
+
+* Mon Jan 27 2014 Justin M. Forbes <jforbes@fedoraproject.org> - 3.12.9-300
+- Backport new IPv6 address flag IFA_F_NOPREFIXROUTE and IFA_F_MANAGETEMPADDR (rhbz 1056711)
+- Linux v3.12.9
+- i915: remove pm_qos request on error (rhbz 1057533)
+
+* Sun Jan 26 2014 Peter Robinson <pbrobinson@fedoraproject.org>
+- Minor ARM config updates
+- Disable highbank cpuidle driver
+- Update CPU thermal scaling options for ARM
+
+* Wed Jan 15 2014 Justin M. Forbes <jforbes@fedoraproject.org - 3.12.8-300
+- Linux v3.12.8
+
+* Wed Jan 15 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-1446 hamradio/yam: information leak in ioctl (rhbz 1053620 1053647)
+- CVE-2014-1438 x86: exceptions are not cleared in AMD FXSAVE workaround (rhbz 1053599 1052914)
+
+* Tue Jan 14 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Fix k-m-e Provides to be explicit to only the package flavor (rhbz 1046246)
+
+* Tue Jan 14 2014 Neil Horman <nhorman@redhat.com>
+- Backport ipv6 route cache expiration fix (rhbz 1040128)
+
+* Sun Jan 12 2014 Peter Robinson <pbrobinson@fedoraproject.org>
+- Enable generic cpufreq-cpu0 driver on ARM
+- Enable thermal userspace support for ARM
+
+* Fri Jan 10 2014 Justin M. Forbes <jforbes@fedoraproject.org - 3.12.7-300
+- Linux v3.12.7
+
+* Wed Jan 08 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Backport support for ALPS Dolphin devices (rhbz 953211)
+- Enable BCMA_DRIVER_GPIO by turning on GPIOLIB everywhere (rhbz 1021098)
+
+* Mon Jan 06 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Add support for BCM57786 devices to tg3 (rhbz 1044471)
+- Fix use after free crash in KVM (rhbz 1047892)
+- Fix oops in KVM with invalid root_hpa (rhbz 924916)
+- CVE-2013-4579: ath9k_htc improper MAC update (rhbz 1032753 1033072)
+
+* Sat Dec 28 2013 Peter Robinson <pbrobinson@fedoraproject.org>
+- Update am33xx (BeagleBone) cpsw patch to upstream version
+
+* Mon Dec 23 2013 Justin M. Forbes <jforbes@fedoraproject.org - 3.12.6-300
+- Linux v3.12.6
+
+* Fri Dec 20 2013 Josh Boyer <jwboyer@fedoraproject.org>
+- Add patches to fix dummy gssd entry (rhbz 1037793)
+
+* Wed Dec 18 2013 Josh Boyer <jwboyer@fedoraproject.org>
+- Fix nowatchdog-on-virt.patch to actually work in KVM guests
+
+* Tue Dec 17 2013 Josh Boyer <jwboyer@fedoraproject.org> - 3.12.5-302
+- Add patch to avoid using queued trim on M500 SSD (rhbz 1024002)
+
+* Mon Dec 16 2013 Josh Boyer <jwboyer@fedoraproject.org>
+- Fix host lockup in bridge code when starting from virt guest (rhbz 1025770)
+
 * Fri Dec 13 2013 Josh Boyer <jwboyer@fedoraproject.org> 3.12.5-301
 - More keys fixes from upstream to fix keyctl_get_persisent crash (rhbz 1043033)
 
