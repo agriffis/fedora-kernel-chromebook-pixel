@@ -62,19 +62,19 @@ Summary: The Linux kernel
 # For non-released -rc kernels, this will be appended after the rcX and
 # gitX tags, so a 3 here would become part of release "0.rcX.gitX.3"
 #
-%global baserelease 301
+%global baserelease 200
 %global fedora_build %{baserelease}
 
 # base_sublevel is the kernel version we're starting with and patching
 # on top of -- for example, 3.1-rc7-git1 starts with a 3.0 base,
 # which yields a base_sublevel of 0.
-%define base_sublevel 12
+%define base_sublevel 15
 
 ## If this is a released kernel ##
 %if 0%{?released_kernel}
 
 # Do we have a -stable update to apply?
-%define stable_update 9
+%define stable_update 4
 # Is it a -stable RC?
 %define stable_rc 0
 # Set rpm version accordingly
@@ -502,11 +502,11 @@ BuildRequires: xmlto, asciidoc
 BuildRequires: sparse
 %endif
 %if %{with_perf}
-BuildRequires: elfutils-devel zlib-devel binutils-devel newt-devel python-devel perl(ExtUtils::Embed) bison
+BuildRequires: elfutils-devel zlib-devel binutils-devel newt-devel python-devel perl(ExtUtils::Embed) bison flex
 BuildRequires: audit-libs-devel
 %endif
 %if %{with_tools}
-BuildRequires: pciutils-devel gettext
+BuildRequires: pciutils-devel gettext ncurses-devel
 %endif
 BuildConflicts: rhbuildsys(DiskFree) < 500Mb
 %if %{with_debuginfo}
@@ -633,17 +633,14 @@ Patch470: die-floppy-die.patch
 Patch510: silence-noise.patch
 Patch530: silence-fbcon-logo.patch
 
-Patch600: x86-allow-1024-cpus.patch
+Patch600: 0001-lib-cpumask-Make-CPUMASK_OFFSTACK-usable-without-deb.patch
+
+#rhbz 917708
+Patch700: Revert-userns-Allow-unprivileged-users-to-create-use.patch
 
 Patch800: crash-driver.patch
 
 # crypto/
-
-# keys
-Patch900: keys-expand-keyring.patch
-Patch901: keys-krb-support.patch
-Patch902: keys-x509-improv.patch
-Patch903: keys-fixes.patch
 
 # secure boot
 Patch1000: secure-modules.patch
@@ -657,18 +654,14 @@ Patch1003: sysrq-secure-boot.patch
 
 # nouveau + drm fixes
 # intel drm is all merged upstream
-
+Patch1826: drm-i915-hush-check-crtc-state.patch
 # Quiet boot fixes
-# silence the ACPI blacklist code
-Patch2802: silence-acpi-blacklist.patch
 
 # fs fixes
 
 # NFSv4
 
 # patches headed upstream
-Patch10000: fs-proc-devtree-remove_proc_entry.patch
-
 Patch12016: disable-i8042-check-on-apple-mac.patch
 
 Patch14000: hibernate-freeze-filesystems.patch
@@ -681,27 +674,15 @@ Patch15000: nowatchdog-on-virt.patch
 
 # ARM
 
-# lpae
-Patch21001: arm-lpae-ax88796.patch
-Patch21004: arm-sound-soc-samsung-dma-avoid-another-64bit-division.patch
-
-# ARM omap
-Patch21010: arm-omap-load-tfp410.patch
-
 # ARM tegra
 Patch21020: arm-tegra-usb-no-reset-linux33.patch
 
 # ARM i.MX6
-# http://www.spinics.net/lists/devicetree/msg08276.html
-Patch21025: arm-imx6-utilite.patch
+Patch21021: arm-beagle.patch
+Patch21022: arm-imx6-utilite.patch
 
-# am33xx (BeagleBone)
-# https://github.com/beagleboard/kernel
-# Pulled primarily from the above git repo. First patch is all in arm-soc
-# scheduled for 3.13. The others should be landing via other trees
-Patch21030: arm-am33xx-arm-soc-upstream.patch
-Patch21031: arm-am33xx-bblack.patch
-Patch21032: arm-am33xx-cpsw.patch
+# ARM sunxi (AllWinner)
+Patch21025: 0001-ARM-sunxi-Add-driver-for-SD-MMC-hosts-found-on-Allwi.patch
 
 #rhbz 754518
 Patch21235: scsi-sd_revalidate_disk-prevent-NULL-ptr-deref.patch
@@ -716,54 +697,65 @@ Patch22000: weird-root-dentry-name-debug.patch
 
 Patch25047: drm-radeon-Disable-writeback-by-default-on-ppc.patch
 
-#rhbz 896695
-Patch25127: 0002-iwlwifi-don-t-WARN-on-bad-firmware-state.patch
+#rhbz 1025603
+Patch25063: disable-libdw-unwind-on-non-x86.patch
 
-#rhbz 993744
-Patch25128: dm-cache-policy-mq_fix-large-scale-table-allocation-bug.patch
+#rhbz 1048314
+Patch25062: 0001-HID-rmi-introduce-RMI-driver-for-Synaptics-touchpads.patch
 
-Patch25140: drm-qxl-backport-fixes-for-Fedora.patch
+#rhbz 1089583
+Patch25064: 0001-HID-rmi-do-not-handle-touchscreens-through-hid-rmi.patch
 
-#rhbz 1011362
-Patch25148: alx-Reset-phy-speed-after-resume.patch
+#rhbz 1090161
+Patch25072: HID-rmi-do-not-fetch-more-than-16-bytes-in-a-query.patch
 
-# Fix 15sec NFS mount delay
-Patch25152: sunrpc-create-a-new-dummy-pipe-for-gssd-to-hold-open.patch
-Patch25153: sunrpc-replace-gssd_running-with-more-reliable-check.patch
-Patch25154: nfs-check-gssd-running-before-krb5i-auth.patch
-#rhbz 1037793
-Patch25166: sunrpc-add-an-info-file-for-the-dummy-gssd-pipe.patch
-Patch25167: rpc_pipe-remove-the-clntXX-dir-if-creating-the-pipe-fails.patch
-Patch25168: rpc_pipe-fix-cleanup-of-dummy-gssd-directory-when-notification-fails.patch
+#rhbz 983342 1093120
+Patch25069: 0001-acpi-video-Add-4-new-models-to-the-use_native_backli.patch
 
-#rhbz 958826
-Patch25164: dell-laptop.patch
+Patch25071: s390-appldata-add-slab.h-for-kzalloc-kfree.patch
 
-#rhbz 1030802
-Patch25171: elantech-Properly-differentiate-between-clickpads-an.patch
+# Patch series from Hans for various backlight and platform driver fixes
+Patch26001: thinkpad_acpi-Add-mappings-for-F9-F12-hotkeys-on-X24.patch
+Patch26002: samsung-laptop-Add-broken-acpi-video-quirk-for-NC210.patch
+Patch26003: ideapad-laptop-Blacklist-rfkill-control-on-the-Lenov.patch
+Patch26004: asus-wmi-Add-a-no-backlight-quirk.patch
+Patch26005: eeepc-wmi-Add-no-backlight-quirk-for-Asus-H87I-PLUS-.patch
+Patch26006: acpi-video-Don-t-register-acpi_video_resume-notifier.patch
+Patch26007: acpi-video-Add-an-acpi_video_unregister_backlight-fu.patch
+Patch26008: acer-wmi-Switch-to-acpi_video_unregister_backlight.patch
+Patch26009: acer-wmi-Add-Aspire-5741-to-video_vendor_dmi_table.patch
+Patch26010: nouveau-Don-t-check-acpi_video_backlight_support-bef.patch
+Patch26011: backlight-Add-backlight-device-un-registration-notif.patch
+Patch26012: acpi-video-Unregister-the-backlight-device-if-a-raw-.patch
+Patch26013: acpi-video-Add-use-native-backlight-quirk-for-the-Th.patch
+Patch26014: acpi-video-Add-use_native_backlight-quirk-for-HP-Pro.patch
 
-#rhbz 924916
-Patch25179: KVM-MMU-handle-invalid-root_hpa-at-__direct_map.patch
+#rhbz 1094066
+Patch25096: drm-i915-set-backlight-duty-cycle-after-backlight-enable-for-gen4.patch
 
-#rhbz 1047892
-Patch25180: KVM-VMX-fix-use-after-free-of-vmx-loaded_vmcs.patch
+#rhbz 1064516
+Patch25098: e1000e-Failure-to-write-SHRA-turns-on-PROMISC-mode.patch
 
-#rhbz 1044471
-Patch25181: tg3-Add-support-for-new-577xx-device-ids.patch
+#rhbz 1106856
+Patch25100: dm-thin-update-discard_granularity-to-reflect-the-thin-pool-blocksize.patch
 
-#rhbz 953211
-Patch25182: Input-ALPS-add-support-for-Dolphin-devices.patch
+Patch25102: intel_pstate-Fix-setting-VID.patch
+Patch25103: intel_pstate-dont-touch-turbo-bit-if-turbo-disabled-or-unavailable.patch
+Patch25104: intel_pstate-Update-documentation-of-max-min_perf_pct-sysfs-files.patch
 
-#rhbz 1056711
-Patch25183: ipv6-introduce-IFA_F_NOPREFIXROUTE-and-IFA_F_MANAGETEMPADDR-flags.patch
-Patch25155: ipv6-addrconf-revert-if_inet6ifa_flag-format.patch
+Patch25109: revert-input-wacom-testing-result-shows-get_report-is-unnecessary.patch
 
-#rhbz 1057533
-Patch25184: i915-remove-pm_qos-request-on-error.patch
+#rhbz 1021036, submitted upstream
+Patch25110: 0001-ideapad-laptop-Change-Lenovo-Yoga-2-series-rfkill-ha.patch
 
-#rhbz 990955
-Patch25185: ath9k_htc-make-sta_rc_update-atomic-for-most-calls.patch
+#rhbz 1015989
+Patch25111: netfilter-nf_nat-fix-oops-on-netns-removal.patch
 
+#rhbz 1114768
+Patch25112: 0001-synaptics-Add-min-max-quirk-for-pnp-id-LEN2002-Edge-.patch
+
+# https://bugs.freedesktop.org/show_bug.cgi?id=79813 submitted upstream
+Patch25113: i915-fix-backlight-regression-misconfigured-VBT.patch
 
 # END OF PATCH DEFINITIONS
 
@@ -1307,22 +1299,17 @@ ApplyOptionalPatch upstream-reverts.patch -R
 
 # Architecture patches
 # x86(-64)
-ApplyPatch x86-allow-1024-cpus.patch
+ApplyPatch 0001-lib-cpumask-Make-CPUMASK_OFFSTACK-usable-without-deb.patch
 
 # ARM64
 
 #
 # ARM
 #
-ApplyPatch arm-lpae-ax88796.patch
-ApplyPatch arm-sound-soc-samsung-dma-avoid-another-64bit-division.patch
-ApplyPatch arm-omap-load-tfp410.patch
 ApplyPatch arm-tegra-usb-no-reset-linux33.patch
+ApplyPatch 0001-ARM-sunxi-Add-driver-for-SD-MMC-hosts-found-on-Allwi.patch
 ApplyPatch arm-imx6-utilite.patch
-
-ApplyPatch arm-am33xx-arm-soc-upstream.patch
-ApplyPatch arm-am33xx-bblack.patch
-ApplyPatch arm-am33xx-cpsw.patch
+ApplyPatch arm-beagle.patch
 
 #
 # bugfixes to drivers and filesystems
@@ -1379,17 +1366,13 @@ ApplyPatch silence-fbcon-logo.patch
 
 # Changes to upstream defaults.
 
+#rhbz 917708
+ApplyPatch Revert-userns-Allow-unprivileged-users-to-create-use.patch
 
 # /dev/crash driver.
 ApplyPatch crash-driver.patch
 
 # crypto/
-
-# keys
-ApplyPatch keys-expand-keyring.patch
-ApplyPatch keys-krb-support.patch
-ApplyPatch keys-x509-improv.patch
-ApplyPatch keys-fixes.patch
 
 # secure boot
 ApplyPatch secure-modules.patch
@@ -1404,15 +1387,11 @@ ApplyPatch sysrq-secure-boot.patch
 # Nouveau DRM
 
 # Intel DRM
+ApplyPatch drm-i915-hush-check-crtc-state.patch
 
 # Radeon DRM
 
-# silence the ACPI blacklist code
-ApplyPatch silence-acpi-blacklist.patch
-
 # Patches headed upstream
-ApplyPatch fs-proc-devtree-remove_proc_entry.patch
-
 ApplyPatch disable-i8042-check-on-apple-mac.patch
 
 # FIXME: REBASE
@@ -1436,53 +1415,63 @@ ApplyPatch ath9k_rx_dma_stop_check.patch
 
 ApplyPatch drm-radeon-Disable-writeback-by-default-on-ppc.patch
 
-#rhbz 896695
-ApplyPatch 0002-iwlwifi-don-t-WARN-on-bad-firmware-state.patch
+#rhbz 1048314
+ApplyPatch 0001-HID-rmi-introduce-RMI-driver-for-Synaptics-touchpads.patch
+#rhbz 1089583
+ApplyPatch 0001-HID-rmi-do-not-handle-touchscreens-through-hid-rmi.patch
+#rhbz 1090161
+ApplyPatch HID-rmi-do-not-fetch-more-than-16-bytes-in-a-query.patch
 
-#rhbz 993744
-ApplyPatch dm-cache-policy-mq_fix-large-scale-table-allocation-bug.patch
+#rhbz 1025603
+ApplyPatch disable-libdw-unwind-on-non-x86.patch
 
-ApplyPatch drm-qxl-backport-fixes-for-Fedora.patch
+#rhbz 983342 1093120
+ApplyPatch 0001-acpi-video-Add-4-new-models-to-the-use_native_backli.patch
 
-#rhbz 1011362
-ApplyPatch alx-Reset-phy-speed-after-resume.patch
+ApplyPatch s390-appldata-add-slab.h-for-kzalloc-kfree.patch
 
-# Fix 15sec NFS mount delay
-ApplyPatch sunrpc-create-a-new-dummy-pipe-for-gssd-to-hold-open.patch
-ApplyPatch sunrpc-replace-gssd_running-with-more-reliable-check.patch
-ApplyPatch nfs-check-gssd-running-before-krb5i-auth.patch
-#rhbz 1037793
-ApplyPatch rpc_pipe-remove-the-clntXX-dir-if-creating-the-pipe-fails.patch
-ApplyPatch sunrpc-add-an-info-file-for-the-dummy-gssd-pipe.patch
-ApplyPatch rpc_pipe-fix-cleanup-of-dummy-gssd-directory-when-notification-fails.patch
+# Patch series from Hans for various backlight and platform driver fixes
+ApplyPatch thinkpad_acpi-Add-mappings-for-F9-F12-hotkeys-on-X24.patch
+ApplyPatch samsung-laptop-Add-broken-acpi-video-quirk-for-NC210.patch
+ApplyPatch ideapad-laptop-Blacklist-rfkill-control-on-the-Lenov.patch
+ApplyPatch asus-wmi-Add-a-no-backlight-quirk.patch
+ApplyPatch eeepc-wmi-Add-no-backlight-quirk-for-Asus-H87I-PLUS-.patch
+ApplyPatch acpi-video-Don-t-register-acpi_video_resume-notifier.patch
+ApplyPatch acpi-video-Add-an-acpi_video_unregister_backlight-fu.patch
+ApplyPatch acer-wmi-Switch-to-acpi_video_unregister_backlight.patch
+ApplyPatch acer-wmi-Add-Aspire-5741-to-video_vendor_dmi_table.patch
+ApplyPatch nouveau-Don-t-check-acpi_video_backlight_support-bef.patch
+ApplyPatch backlight-Add-backlight-device-un-registration-notif.patch
+ApplyPatch acpi-video-Unregister-the-backlight-device-if-a-raw-.patch
+ApplyPatch acpi-video-Add-use-native-backlight-quirk-for-the-Th.patch
+ApplyPatch acpi-video-Add-use_native_backlight-quirk-for-HP-Pro.patch
 
-#rhbz 958826
-ApplyPatch dell-laptop.patch
+#rhbz 1094066
+ApplyPatch drm-i915-set-backlight-duty-cycle-after-backlight-enable-for-gen4.patch
 
-#rhbz 1030802
-ApplyPatch elantech-Properly-differentiate-between-clickpads-an.patch
+#rhbz 1064516
+ApplyPatch e1000e-Failure-to-write-SHRA-turns-on-PROMISC-mode.patch
 
-#rhbz 924916
-ApplyPatch KVM-MMU-handle-invalid-root_hpa-at-__direct_map.patch
+#rhbz 1106856
+ApplyPatch dm-thin-update-discard_granularity-to-reflect-the-thin-pool-blocksize.patch
 
-#rhbz 1047892
-ApplyPatch KVM-VMX-fix-use-after-free-of-vmx-loaded_vmcs.patch
+ApplyPatch intel_pstate-Fix-setting-VID.patch
+ApplyPatch intel_pstate-dont-touch-turbo-bit-if-turbo-disabled-or-unavailable.patch
+ApplyPatch intel_pstate-Update-documentation-of-max-min_perf_pct-sysfs-files.patch
 
-#rhbz 1044471
-ApplyPatch tg3-Add-support-for-new-577xx-device-ids.patch
+ApplyPatch revert-input-wacom-testing-result-shows-get_report-is-unnecessary.patch
 
-#rhbz 953211
-ApplyPatch Input-ALPS-add-support-for-Dolphin-devices.patch
+#rhbz 1021036, submitted upstream
+ApplyPatch 0001-ideapad-laptop-Change-Lenovo-Yoga-2-series-rfkill-ha.patch
 
-#rhbz 1056711
-ApplyPatch ipv6-introduce-IFA_F_NOPREFIXROUTE-and-IFA_F_MANAGETEMPADDR-flags.patch
-ApplyPatch ipv6-addrconf-revert-if_inet6ifa_flag-format.patch
+#rhbz 1015989
+ApplyPatch netfilter-nf_nat-fix-oops-on-netns-removal.patch
 
-#rhbz 1057533
-ApplyPatch i915-remove-pm_qos-request-on-error.patch
+#rhbz 1114768
+ApplyPatch 0001-synaptics-Add-min-max-quirk-for-pnp-id-LEN2002-Edge-.patch
 
-#rhbz 990955
-ApplyPatch ath9k_htc-make-sta_rc_update-atomic-for-most-calls.patch
+# https://bugs.freedesktop.org/show_bug.cgi?id=79813 submitted upstream
+ApplyPatch i915-fix-backlight-regression-misconfigured-VBT.patch
 
 # END OF PATCH APPLICATIONS
 
@@ -1868,6 +1857,9 @@ chmod +x tools/power/cpupower/utils/version-gen.sh
    popd
 %endif #turbostat/x86_energy_perf_policy
 %endif
+pushd tools/thermal/tmon/
+%{make}
+popd
 %endif
 
 %if %{with_doc}
@@ -1981,13 +1973,15 @@ find $RPM_BUILD_ROOT/usr/include \
 
 %if %{with_perf}
 # perf tool binary and supporting scripts/binaries
-%{perf_make} DESTDIR=$RPM_BUILD_ROOT install
+%{perf_make} DESTDIR=$RPM_BUILD_ROOT install-bin
+# remove the 'trace' symlink.
+rm -f %{buildroot}%{_bindir}/trace
 
 # python-perf extension
 %{perf_make} DESTDIR=$RPM_BUILD_ROOT install-python_ext
 
 # perf man pages (note: implicit rpm magic compresses them later)
-%{perf_make} DESTDIR=$RPM_BUILD_ROOT install-man || %{doc_build_fail}
+%{perf_make} DESTDIR=$RPM_BUILD_ROOT try-install-man || %{doc_build_fail}
 %endif
 
 %if %{with_tools}
@@ -2022,6 +2016,9 @@ install -m644 %{SOURCE2001} %{buildroot}%{_sysconfdir}/sysconfig/cpupower
    make DESTDIR=%{buildroot} install
    popd
 %endif #turbostat/x86_energy_perf_policy
+pushd tools/thermal/tmon
+make INSTALL_ROOT=%{buildroot} install
+popd
 %endif
 
 %if %{with_bootwrapper}
@@ -2200,6 +2197,7 @@ fi
 %{_bindir}/turbostat
 %{_mandir}/man8/turbostat*
 %endif
+%{_bindir}/tmon
 %endif
 
 %if %{with_debuginfo}
@@ -2286,6 +2284,293 @@ fi
 #                 ||----w |
 #                 ||     ||
 %changelog
+* Mon Jul  7 2014 Justin M. Forbes <jforbes@fedoraproject.org> 3.15.4-200
+- Linux v3.15.4
+- Fixes CVE-2014-4715 (rhbz 1115767 1116362)
+- Fixes CVE-2014-4699 (rhbz 1115927 1116477)
+
+* Tue Jul  1 2014 Justin M. Forbes <jforbes@fedoraproject.org> 3.15.3-200
+- Linux v3.15.3
+- drm/i915: Fix backlight regression caused by misconfigured VBT
+
+* Tue Jul  1 2014 Hans de Goede <hdegoede@redhat.com>
+- Add min/max quirk for the ThinkPad Edge E531 touchpad (rhbz#1114768)
+
+* Mon Jun 30 2014 Josh Boyer <jwboyer@fedoraproject.org> - 3.15.2-200
+- Backport netfilter panic fix (rhbz 1015989)
+
+* Mon Jun 30 2014 Justin M. Forbes <jforbes@fedoraproject.org>
+- Linux v3.15.2
+
+* Fri Jun 27 2014 Hans de Goede <hdegoede@redhat.com>
+- Add patch to fix wifi on lenove yoga 2 series (rhbz#1021036)
+
+* Thu Jun 26 2014 Justin M. Forbes <jforbes@fedoraproject.org> - 3.14.9-200
+- Linux v3.14.9
+
+* Wed Jun 25 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Revert commit that breaks Wacom Intuos4 from Benjamin Tissoires
+- CVE-2014-0206 aio: insufficient head sanitization in aio_read_events_ring (rhbz 1094602 1112975)
+
+* Mon Jun 23 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-4508 BUG in x86_32 syscall auditing (rhbz 1111590 1112073)
+
+* Fri Jun 20 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Bring in intel_pstate regression fixes for BayTrail (rhbz 1111920)
+
+* Mon Jun 16 2014 Justin M. Forbes <jforbes@fedoraproject.org> - 3.14.8-200
+- Linux v3.14.8
+
+* Mon Jun 16 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-4014 possible priv escalation in userns (rhbz 1107966 1109836)
+
+* Wed Jun 11 2014 Josh Boyer <jwboyer@fedoraproject.org> - 3.14.7-200
+- Fix elantech right click on Dell vostro 5470 (rhbz 1103528)
+- Fix fstrim on dm-thin volume data (rhbz 1106856)
+- Fix NFS NULL pointer deref with ipv6 (rhbz 1099761)
+- Fix promisc mode on certain e1000e cards (rhbz 1064516)
+- Fix i915 backlight issue on gen4 (rhbz 1094066)
+- Linux v3.14.7
+
+* Sat Jun 07 2014 Justin M. Forbes <jforbes@fedoraproject.org> - 3.14.6-200
+- Linux v3.14.6
+
+* Fri Jun 06 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-3153 futex: pi futexes requeue issue (rhbz 1103626 1105609)
+- CVE-2014-3940 missing check during hugepage migration (rhbz 1104097 1105042)
+
+* Tue Jun 03 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Add fix for team MTU settings from Jiri Pirko (rhbz 1099857)
+- Backport fix for issues with Quagga introduced by CVE fixes (rhbz 1097684)
+
+* Mon Jun 02 2014 Justin M. Forbes <jforbes@fedoraproject.org> - 3.14.5-200
+- Linux v3.14.5
+
+* Thu May 29 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-3917 DoS with syscall auditing (rhbz 1102571 1102715)
+
+* Fri May 23 2014 Peter Robinson <pbrobinson@fedoraproject.org>
+- Re-add rebased Beagle patch set for 3.14 (RHBZ 1094768)
+- Drop some no longer needed ARM patches
+
+* Tue May 20 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Backport patch to add new elantech touchpad support (rhbz 1051668)
+
+* Wed May 14 2014 Hans de Goede <hdegoede@redhat.com>
+- Add synaptics min/max quirk patch for the ThinkPad W540 (rhbz 1096436)
+
+* Tue May 13 2014 Justin M. Forbes <jforbes@fedoraproject.org> - 3.14.4-200
+- Linux v3.14.4
+
+* Mon May 12 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-3144/CVE-2014-3145 filter: prevent nla from peeking beyond eom (rhbz 1096775, 1096784)
+
+* Fri May 09 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-1738 CVE-2014-1737 floppy: priv esclation (rhbz 1094299 1096195)
+
+* Thu May 08 2014 Neil Horman <nhorman@redhat.com>
+- Fix dma unmap error in jme driver (rhbz 1082266)
+
+* Tue May 06 2014 Josh Boyer <jwboyer@fedoraproject.org> 3.14.3-200
+- CVE-2014-0181 insufficient netlink permission checks (rhbz 1094270 1094265)
+
+* Tue May 06 2014 Justin M. Forbes <jforbes@fedoraproject.org> 
+- Linux v3.14.3
+
+* Tue May 06 2014 Hans de Goede <hdegoede@redhat.com>
+- Add a patch to fix the Synaptics Touch Pad V 103S found on some keyboard
+  docks for win8 tablets
+- Add a patch to fix the elantech touchpad on Gigabyte U2442 laptops
+- Add a patch to fix backlight control on the Samsung NC210/NC110 (rhbz#861573)
+- Add a patch to fix backlight & wifi on the Asus EEE PC 1015PX (rhbz#1067181)
+
+* Tue May 06 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-0196 pty race leading to memory corruption (rhbz 1094232 1094240)
+- Add patch to fix smdb soft-lockup (rhbz 1082586)
+
+* Mon May 05 2014 Hans de Goede <hdegoede@redhat.com>
+- Add use_native_brightness quirk for the ThinkPad T530 (rhbz 1089545)
+
+* Sat May 03 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Fix TUN performance regression (rhbz 1093931)
+- Add patch to fix HID rmi driver from Benjamin Tissoires (rhbz 1090161)
+
+* Thu May 01 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Add backported drm qxl fix (rhbz 1060327)
+
+* Thu May  1 2014 Hans de Goede <hdegoede@redhat.com>
+- Sync min/max quirk patch with upstream to add a quirk for the ThinkPad L540
+  (rhbz 1088588)
+
+* Thu May  1 2014 Hans de Goede <hdegoede@redhat.com>
+- Add use_native_backlight quirk for 4 laptops (rhbz 983342 1093120)
+
+* Wed Apr 30 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-3122: mm: fix locking DoS issue (rhbz 1093084 1093076)
+
+* Mon Apr 28 2014 Justin M. Forbes <jforbes@fedoraproject.org> 3.14.2-200
+- Linux v3.14.2 (rhbz 1067071 1091722 906568)
+
+* Fri Apr 25 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Add patch from Will Woods to fix fanotify EOVERFLOW issue (rhbz 696821)
+- Fix ACPI issue preventing boot on AMI firmware (rhbz 1090746)
+
+* Fri Apr 25 2014 Hans de Goede <hdegoede@redhat.com>
+- Add synaptics min-max quirk for ThinkPad Edge E431 (rhbz#1089689)
+
+* Wed Apr 23 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Fix SELinux wine issue again (rhbz 1013466)
+
+* Tue Apr 22 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Add patch to fix Synaptics touchscreens and HID rmi driver (rhbz 1089583)
+
+* Mon Apr 21 2014 Josh Boyer <jwboyer@fedoraproject.org> - 3.14.1-200
+- Fix Brainboxes Express Cards (rhbz 1071914)
+- Fix build issues with CONFIG_DEBUG_VM set (rhbz 1074710)
+- Fix perf build failures
+
+* Mon Apr 21 2014 Justin M. Forbes <jforbes@fedoraproject.org>
+- Linux v3.14.1
+
+* Thu Apr 17 2014 Hans de Goede <hdegoede@redhat.com>
+- Update min/max quirk patch to add a quirk for the ThinkPad L540 (rhbz1088588)
+
+* Mon Apr 14 2014 Justin M. Forbes <jforbes@fedoraproject.org> - 3.13.10-200
+- Linux v3.13.10
+
+* Mon Apr 14 2014 Hans de Goede <hdegoede@redhat.com>
+- Add min/max quirks for various new Thinkpad touchpads (rhbz 1085582 1085697)
+
+* Mon Apr 14 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-2851 net ipv4 ping refcount issue in ping_init_sock (rhbz 1086730 1087420)
+
+* Thu Apr 10 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Backported HID RMI driver for Haswell Dell XPS machines from Benjamin Tissoires (rhbz 1048314)
+
+* Wed Apr 09 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-0155 KVM: BUG caused by invalid guest ioapic redirect table (rhbz 1081589 1085016)
+- Add patch to fix SELinux lables on /proc files (rhbz 1084829)
+- Add patch to fix S3 in KVM guests (rhbz 1074235)
+
+* Thu Apr 03 2014 Justin M. Forbes <jforbes@fedoraproject.org> - 3.13.9-200
+- Linux v3.13.9
+
+* Tue Apr 01 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-2678 net: rds: deref of NULL dev in rds_iw_laddr_check (rhbz 1083274 1083280)
+
+* Mon Mar 31 2014 Justin M. Forbes <jforbes@fedoraproject.org> - 3.13.8-200
+- Linux v3.13.8
+
+* Mon Mar 31 2014 Hans de Goede <hdegoede@redhat.com>
+- Fix clicks getting lost with cypress_ps2 touchpads with recent
+  xorg-x11-drv-synaptics versions (bfdo#76341)
+
+* Fri Mar 28 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-2580 xen: netback crash trying to disable due to malformed packet (rhbz 1080084 1080086)
+- CVE-2014-0077 vhost-net: insufficent big packet handling in handle_rx (rhbz 1064440 1081504)
+- CVE-2014-0055 vhost-net: insufficent error handling in get_rx_bufs (rhbz 1062577 1081503)
+- CVE-2014-2568 net: potential info leak when ubuf backed skbs are zero copied (rhbz 1079012 1079013)
+
+* Mon Mar 24 2014 Justin M. Forbes <jforbes@fedoraproject.org> - 3.13.7-200
+- Linux v3.13.7
+
+* Thu Mar 20 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-0131: skbuff: use-after-free during segmentation with zerocopy (rhbz 1074589 1079006)
+- Fix readahead semantics on pipes and sockets (rhbz 1078894)
+
+* Mon Mar 17 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-2523 netfilter: nf_conntrack_dccp: incorrect skb_header_pointer API usages (rhbz 1077343 1077350)
+
+* Wed Mar 12 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Fix locking issue in iwldvm (rhbz 1046495)
+
+* Tue Mar 11 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-2309 ipv6: crash due to router advertisment flooding (rhbz 1074471 1075064)
+
+* Fri Mar 07 2014 Justin M. Forbes <jforbes@fedoraproject.org> - 3.13.6-200
+- Linux v3.13.6
+
+* Fri Mar 07 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Add patch to fix iwldvm WARN (rhbz 1065663)
+- Revert two xhci fixes that break USB mass storage (rhbz 1073180)
+
+* Thu Mar 06 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Fix stale EC events on Samsung systems (rhbz 1003602)
+- Fix depmod error message from hci_vhci module (rhbz 1051748)
+- Fix bogus WARN in iwlwifi (rhbz 1071998)
+
+* Tue Mar 04 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Fix MAC-before-DAC check for mmap_zero (rhbz 1013466)
+- Fix hidp crash with apple bluetooth trackpads (rhbz 1027465)
+
+* Mon Mar 03 2014 Josh Boyer <jwboyer@fedoraproject.org> - 3.13.5-202
+- CVE-2014-0100 net: inet frag race condition use-after-free (rhbz 1072026 1070618)
+- CVE-2014-0101 sctp: null ptr deref when processing auth cookie_echo chunk (rhbz 1070209 1070705)
+- Fix overly verbose audit logs (rhbz 1066064)
+
+* Mon Mar 03 2014 Josh Boyer <jwboyer@fedoraproject.org> - 3.13.5-201
+- CVE-2014-0049 kvm: mmio_fragments out-of-bounds access (rhbz 1062368 1071837)
+- Fix atomic sched BUG in tty low_latency (rhbz 1065087)
+
+* Fri Feb 28 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-0102 keyctl_link can be used to cause an oops (rhbz 1071396)
+
+* Fri Feb 28 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Drop alx phy reset patch that is already in 3.13
+
+* Tue Feb 25 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Fix mounting issues on cifs (rhbz 1068862)
+
+* Mon Feb 24 2014 Josh Boyer <jwboyer@fedoraproject.org> - 3.13.5-200
+- CVE-2014-2039 s390: crash due to linkage stack instructions (rhbz 1067558 1068758)
+- Fix lockdep issue in EHCI when using threaded IRQs (rhbz 1056170)
+
+* Mon Feb 24 2014 Justin M. Forbes <jforbes@fedoraproject.org>
+- Linux v3.13.5
+
+* Fri Feb 21 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Fix WARN from e100 from Michele Baldessari (rhbz 994438)
+
+* Thu Feb 20 2014 Peter Robinson <pbrobinson@fedoraproject.org> - 3.13.4-200
+- Rebase i.MX6 Utilite to upstream version
+
+* Thu Feb 20 2014 Justin M. Forbes <jforbes@fedoraproject.org>
+- Linux v3.13.4
+
+* Tue Feb 18 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Fix r8169 ethernet after suspend (rhbz 1054408)
+- Enable INTEL_MIC drivers (rhbz 1064086)
+
+* Fri Feb 14 2014 Josh Boyer <jwboyer@fedoraproject.org> - 3.13.3-201
+- CVE-2014-0069 cifs: incorrect handling of bogus user pointers (rhbz 1064253 1062584)
+
+* Thu Feb 13 2014 Justin M. Forbes <jforbes@fedoraproject.org> - 3.13.3-200
+- Linux v3.13.3
+
+* Wed Feb 12 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Add patch to fix list corruption from pinctrl (rhbz 1051918)
+- Add IFA_FLAGS for IPv6 temporary addresses back (rhbz 1064430)
+- Fix cgroup destroy oops (rhbz 1045755)
+- Fix backtrace in amd_e400_idle (rhbz 1031296)
+- CVE-2014-1874 SELinux: local denial of service (rhbz 1062356 1062507)
+
+* Wed Feb 12 2014 Justin M. Forbes <jforbes@fedoraproject.org> - 3.13.2-200
+- Packaging fixes for tmon and trace
+
+* Tue Feb 11 2014 Peter Robinson <pbrobinson@fedoraproject.org>
+- Update am33xx (BeagleBone) patch for 3.13
+- Minor ARM updates
+
+* Mon Feb 10 2014 Justin M. Forbes <jforbes@fedoraproject.org>
+- Linux v3.13.2
+- Fixes (rhbz 1062144)
+
+* Thu Feb 06 2014 Justin M. Forbes <jforbes@fedoraproject.org> - 3.12.10-300
+- Linux v3.12.10
+
+* Wed Feb 05 2014 Justin M. Forbes <jforbes@fedoraproject.org>
+- fix resume issues on Renesas chips in Samsung laptops (rhbz 950630)
+
 * Wed Jan 29 2014 Justin M. Forbes <jforbes@fedoraproject.org> - 3.12.9-301
 - ipv6 addrconf: revert /proc/net/if_inet6 ifa_flag format (rhbz 1056711)
 
