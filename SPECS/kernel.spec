@@ -42,19 +42,19 @@ Summary: The Linux kernel
 # For non-released -rc kernels, this will be appended after the rcX and
 # gitX tags, so a 3 here would become part of release "0.rcX.gitX.3"
 #
-%global baserelease 300
+%global baserelease 201
 %global fedora_build %{baserelease}
 
 # base_sublevel is the kernel version we're starting with and patching
 # on top of -- for example, 3.1-rc7-git1 starts with a 3.0 base,
 # which yields a base_sublevel of 0.
-%define base_sublevel 17
+%define base_sublevel 18
 
 ## If this is a released kernel ##
 %if 0%{?released_kernel}
 
 # Do we have a -stable update to apply?
-%define stable_update 2
+%define stable_update 3
 # Set rpm version accordingly
 %if 0%{?stable_update}
 %define stablerev %{stable_update}
@@ -516,6 +516,9 @@ Patch530: silence-fbcon-logo.patch
 
 Patch600: lib-cpumask-Make-CPUMASK_OFFSTACK-usable-without-deb.patch
 
+#rhbz 1126580
+Patch601: Kbuild-Add-an-option-to-enable-GCC-VTA.patch
+
 Patch800: crash-driver.patch
 
 # crypto/
@@ -551,6 +554,7 @@ Patch1019: Add-sysrq-option-to-disable-secure-boot-mode.patch
 # nouveau + drm fixes
 # intel drm is all merged upstream
 Patch1826: drm-i915-hush-check-crtc-state.patch
+Patch1827: drm-i915-Don-t-WARN-in-edp_panel_vdd_off.patch
 
 # Quiet boot fixes
 
@@ -568,7 +572,7 @@ Patch14010: lis3-improve-handling-of-null-rate.patch
 Patch15000: watchdog-Disable-watchdog-on-virtual-machines.patch
 
 # PPC
-Patch18000: ppc64-fixtools.patch
+
 # ARM64
 
 # ARMv7
@@ -596,87 +600,58 @@ Patch21247: ath9k-rx-dma-stop-check.patch
 
 Patch22000: weird-root-dentry-name-debug.patch
 
-#rhbz 1025603
-Patch25063: disable-libdw-unwind-on-non-x86.patch
-
-Patch26000: perf-install-trace-event-plugins.patch
-
 # Patch series from Hans for various backlight and platform driver fixes
 Patch26002: samsung-laptop-Add-broken-acpi-video-quirk-for-NC210.patch
-
-#rhbz 1134969
-Patch26016: HID-wacom-Add-support-for-the-Cintiq-Companion.patch
-
-#rhbz 1110011
-Patch26019: psmouse-Add-psmouse_matches_pnp_id-helper-function.patch
-Patch26020: psmouse-Add-support-for-detecting-FocalTech-PS-2-tou.patch
-
-#rhbz 1138759
-Patch26021: drm-vmwgfx-Fix-drm.h-include.patch
-
-#rhbz 1145318
-Patch26029: KEYS-Reinstate-EPERM-for-a-key-type-name-beginning-w.patch
-
-Patch26030: GFS2-Make-rename-not-save-dirent-location.patch
-
-#CVE-2014-7970 rhbz 1151095 1151484
-Patch26032: mnt-Prevent-pivot_root-from-creating-a-loop-in-the-m.patch
-
-#rhbz 1149509
-Patch26034: USB-core-add-device-qualifier-quirk.patch
-Patch26035: USB-quirks-enable-device-qualifier-quirk-for-Elan-To.patch
-Patch26036: USB-quirks-enable-device-qualifier-quirk-for-another.patch
-Patch26037: HID-usbhid-add-always-poll-quirk.patch
-Patch26038: HID-usbhid-enable-always-poll-quirk-for-Elan-Touchsc.patch
-Patch26039: HID-usbhid-always-poll-quirk-for-Elan-Touchscreen-00.patch
-Patch26040: USB-quirks-device-qualifier-quirk-for-another-Elan-t.patch
-Patch26041: HID-usbhid-always-poll-quirk-for-Elan-Touchscreen-01.patch
-
-#CVE-2014-8086 rhbz 1151353 1152608
-Patch26056: ext4-fix-race-between-write-and-fcntl-F_SETFL.patch
 
 #rhbz 1089731
 Patch26058: asus-nb-wmi-Add-wapf4-quirk-for-the-X550VB.patch
 
-#rhbz 1153381
-Patch26059: Input-synaptics-gate-forcepad-support-by-DMI-check.patch
+#rhbz 1135338
+Patch26090: HID-add-support-for-MS-Surface-Pro-3-Type-Cover.patch
 
-#CVE-2014-3688 rhbz 1155745 1155751
-Patch26061: net-sctp-fix-skb_over_panic-when-receiving-malformed.patch
+#rhbz 1164945
+Patch26092: xhci-Add-broken-streams-quirk-for-Fresco-Logic-FL100.patch
+Patch26093: uas-Add-US_FL_NO_ATA_1X-for-Seagate-devices-with-usb.patch
+Patch26094: uas-Add-US_FL_NO_REPORT_OPCODES-for-JMicron-JMS566-w.patch
 
-#CVE-2014-3687 rhbz 1155731 1155738
-Patch26062: net-sctp-fix-panic-on-duplicate-ASCONF-chunks.patch
+#rhbz 1172543
+Patch26096: cfg80211-don-t-WARN-about-two-consecutive-Country-IE.patch
 
-#CVE-2014-3673 rhbz 1147850 1155727
-Patch26063: net-sctp-fix-remote-memory-pressure-from-excessive-q.patch
+#rhbz 1173806
+Patch26101: powerpc-powernv-force-all-CPUs-to-be-bootable.patch
 
-#rhbz 1111138
-Patch26064: i8042-Add-notimeout-quirk-for-Fujitsu-Lifebook-A544-.patch
+Patch26107: uapi-linux-target_core_user.h-fix-headers_install.sh.patch
 
-# CVE-2014-3610 kvm: noncanonical MSR writes (rhbz 1144883 1156543)
-# CVE-2014-3611 kvm: PIT timer race condition (rhbz 1144878 1156537)
-# CVE-2014-3646 kvm: vmx: invvpid vm exit not handled (rhbz 1144825 1156534)
-# CVE-2014-8369 kvm: excessive pages un-pinning in kvm_iommu_map error path (rhbz 1156518 1156522)
-# CVE-2014-8480 CVE-2014-8481 kvm: NULL pointer dereference during rip relative instruction emulation (rhbz 1156615 1156616)
-Patch26070: KVM-x86-Check-non-canonical-addresses-upon-WRMSR.patch
-Patch26071: KVM-x86-Prevent-host-from-panicking-on-shared-MSR-wr.patch
-Patch26072: KVM-x86-Improve-thread-safety-in-pit.patch
-Patch26073: KVM-x86-Fix-wrong-masking-on-relative-jump-call.patch
-Patch26074: KVM-x86-Emulator-fixes-for-eip-canonical-checks-on-n.patch
-Patch26075: KVM-x86-Handle-errors-when-RIP-is-set-during-far-jum.patch
-Patch26076: kvm-vmx-handle-invvpid-vm-exit-gracefully.patch
-Patch26077: kvm-x86-don-t-kill-guest-on-unknown-exit-reason.patch
-Patch26078: KVM-x86-Decoding-guest-instructions-which-cross-page.patch
-Patch26079: KVM-emulate-avoid-accessing-NULL-ctxt-memopp.patch
-Patch26080: KVM-x86-Emulator-does-not-decode-clflush-well.patch
-Patch26081: KVM-x86-PREFETCH-and-HINT_NOP-should-have-SrcMem-fla.patch
-Patch26082: kvm-fix-excessive-pages-un-pinning-in-kvm_iommu_map-.patch
+#rhbz 1163927
+Patch26121: Set-UID-in-sess_auth_rawntlmssp_authenticate-too.patch
 
-#rhbz 1157327
-Patch26083: quirk-for-Lenovo-Yoga-3-no-rfkill-switch.patch
+#CVE-2014-9428 rhbz 1178826,1178833
+Patch26122: batman-adv-Calculate-extra-tail-size-based-on-queued.patch
+
+#CVE-2014-9529 rhbz 1179813 1179853
+Patch26124: KEYS-close-race-between-key-lookup-and-freeing.patch
+
+#rhbz 1124119
+Patch26126: uas-Do-not-blacklist-ASM1153-disk-enclosures.patch
+Patch26127: uas-Add-US_FL_NO_ATA_1X-for-2-more-Seagate-disk-encl.patch
+Patch26128: uas-Add-no-report-opcodes-quirk-for-Simpletech-devic.patch
+
+#rhbz 1115713
+Patch26129: samsung-laptop-Add-use_native_backlight-quirk-and-en.patch
+#rhbz 1163574
+Patch26130: acpi-video-Add-disable_native_backlight-quirk-for-De.patch
+#rhbz 1094948
+Patch26131: acpi-video-Add-disable_native_backlight-quirk-for-Sa.patch
 
 # git clone ssh://git.fedorahosted.org/git/kernel-arm64.git, git diff master...devel
 Patch30000: kernel-arm64.patch
+
+# Fix for big-endian arches, already upstream
+Patch30001: mpssd-x86-only.patch
+
+# Patches from 3.18.4 stable queue (should fix i915 issues)
+Patch30002: stable-3.18.4-queue.patch
+Patch30003: xhci-check-if-slot-is-already-in-default-state.patch
 
 # END OF PATCH DEFINITIONS
 
@@ -1248,7 +1223,6 @@ ApplyOptionalPatch upstream-reverts.patch -R
 ApplyPatch lib-cpumask-Make-CPUMASK_OFFSTACK-usable-without-deb.patch
 
 # PPC
-ApplyPatch ppc64-fixtools.patch
 
 # ARM64
 
@@ -1321,6 +1295,8 @@ ApplyPatch input-silence-i8042-noise.patch
 ApplyPatch silence-fbcon-logo.patch
 
 # Changes to upstream defaults.
+#rhbz 1126580
+ApplyPatch Kbuild-Add-an-option-to-enable-GCC-VTA.patch
 
 # /dev/crash driver.
 ApplyPatch crash-driver.patch
@@ -1359,6 +1335,7 @@ ApplyPatch Add-sysrq-option-to-disable-secure-boot-mode.patch
 
 # Intel DRM
 ApplyPatch drm-i915-hush-check-crtc-state.patch
+ApplyPatch drm-i915-Don-t-WARN-in-edp_panel_vdd_off.patch
 
 # Radeon DRM
 
@@ -1384,89 +1361,62 @@ ApplyPatch criu-no-expert.patch
 #rhbz 892811
 ApplyPatch ath9k-rx-dma-stop-check.patch
 
-#rhbz 1025603
-ApplyPatch disable-libdw-unwind-on-non-x86.patch
-
-ApplyPatch perf-install-trace-event-plugins.patch
-
 # Patch series from Hans for various backlight and platform driver fixes
 ApplyPatch samsung-laptop-Add-broken-acpi-video-quirk-for-NC210.patch
-
-#rhbz 1134969
-ApplyPatch HID-wacom-Add-support-for-the-Cintiq-Companion.patch
-
-#rhbz 1110011
-ApplyPatch psmouse-Add-psmouse_matches_pnp_id-helper-function.patch
-ApplyPatch psmouse-Add-support-for-detecting-FocalTech-PS-2-tou.patch
-
-#rhbz 1138759
-ApplyPatch drm-vmwgfx-Fix-drm.h-include.patch
-
-#rhbz 1145318
-ApplyPatch KEYS-Reinstate-EPERM-for-a-key-type-name-beginning-w.patch
-
-ApplyPatch GFS2-Make-rename-not-save-dirent-location.patch
-
-#CVE-2014-7970 rhbz 1151095 1151484
-ApplyPatch mnt-Prevent-pivot_root-from-creating-a-loop-in-the-m.patch
-
-#rhbz 1149509
-ApplyPatch USB-core-add-device-qualifier-quirk.patch
-ApplyPatch USB-quirks-enable-device-qualifier-quirk-for-Elan-To.patch
-ApplyPatch USB-quirks-enable-device-qualifier-quirk-for-another.patch
-ApplyPatch HID-usbhid-add-always-poll-quirk.patch
-ApplyPatch HID-usbhid-enable-always-poll-quirk-for-Elan-Touchsc.patch
-ApplyPatch HID-usbhid-always-poll-quirk-for-Elan-Touchscreen-00.patch
-ApplyPatch USB-quirks-device-qualifier-quirk-for-another-Elan-t.patch
-ApplyPatch HID-usbhid-always-poll-quirk-for-Elan-Touchscreen-01.patch
-
-#CVE-2014-8086 rhbz 1151353 1152608
-ApplyPatch ext4-fix-race-between-write-and-fcntl-F_SETFL.patch
 
 #rhbz 1089731
 ApplyPatch asus-nb-wmi-Add-wapf4-quirk-for-the-X550VB.patch
 
-#rhbz 1153381
-ApplyPatch Input-synaptics-gate-forcepad-support-by-DMI-check.patch
+#rhbz 1135338
+ApplyPatch HID-add-support-for-MS-Surface-Pro-3-Type-Cover.patch
 
-#CVE-2014-3688 rhbz 1155745 1155751
-ApplyPatch net-sctp-fix-skb_over_panic-when-receiving-malformed.patch
+#rhbz 1164945
+ApplyPatch xhci-Add-broken-streams-quirk-for-Fresco-Logic-FL100.patch
+ApplyPatch uas-Add-US_FL_NO_ATA_1X-for-Seagate-devices-with-usb.patch
+ApplyPatch uas-Add-US_FL_NO_REPORT_OPCODES-for-JMicron-JMS566-w.patch
 
-#CVE-2014-3687 rhbz 1155731 1155738
-ApplyPatch net-sctp-fix-panic-on-duplicate-ASCONF-chunks.patch
+#rhbz 1172543
+ApplyPatch cfg80211-don-t-WARN-about-two-consecutive-Country-IE.patch
 
-#CVE-2014-3673 rhbz 1147850 1155727
-ApplyPatch net-sctp-fix-remote-memory-pressure-from-excessive-q.patch
+#rhbz 1173806
+ApplyPatch powerpc-powernv-force-all-CPUs-to-be-bootable.patch
 
-#rhbz 1111138
-ApplyPatch i8042-Add-notimeout-quirk-for-Fujitsu-Lifebook-A544-.patch
+ApplyPatch uapi-linux-target_core_user.h-fix-headers_install.sh.patch
 
-# CVE-2014-3610 kvm: noncanonical MSR writes (rhbz 1144883 1156543)
-# CVE-2014-3611 kvm: PIT timer race condition (rhbz 1144878 1156537)
-# CVE-2014-3646 kvm: vmx: invvpid vm exit not handled (rhbz 1144825 1156534)
-# CVE-2014-8369 kvm: excessive pages un-pinning in kvm_iommu_map error path (rhbz 1156518 1156522)
-# CVE-2014-8480 CVE-2014-8481 kvm: NULL pointer dereference during rip relative instruction emulation (rhbz 1156615 1156616)
-ApplyPatch KVM-x86-Check-non-canonical-addresses-upon-WRMSR.patch
-ApplyPatch KVM-x86-Prevent-host-from-panicking-on-shared-MSR-wr.patch
-ApplyPatch KVM-x86-Improve-thread-safety-in-pit.patch
-ApplyPatch KVM-x86-Fix-wrong-masking-on-relative-jump-call.patch
-ApplyPatch KVM-x86-Emulator-fixes-for-eip-canonical-checks-on-n.patch
-ApplyPatch KVM-x86-Handle-errors-when-RIP-is-set-during-far-jum.patch
-ApplyPatch kvm-vmx-handle-invvpid-vm-exit-gracefully.patch
-ApplyPatch kvm-x86-don-t-kill-guest-on-unknown-exit-reason.patch
-ApplyPatch KVM-x86-Decoding-guest-instructions-which-cross-page.patch
-ApplyPatch KVM-emulate-avoid-accessing-NULL-ctxt-memopp.patch
-ApplyPatch KVM-x86-Emulator-does-not-decode-clflush-well.patch
-ApplyPatch KVM-x86-PREFETCH-and-HINT_NOP-should-have-SrcMem-fla.patch
-ApplyPatch kvm-fix-excessive-pages-un-pinning-in-kvm_iommu_map-.patch
+#rhbz 1163927
+ApplyPatch Set-UID-in-sess_auth_rawntlmssp_authenticate-too.patch
 
-#rhbz 1157327
-ApplyPatch quirk-for-Lenovo-Yoga-3-no-rfkill-switch.patch
+#CVE-2014-9428 rhbz 1178826,1178833
+ApplyPatch batman-adv-Calculate-extra-tail-size-based-on-queued.patch
+
+#CVE-2014-9529 rhbz 1179813 1179853
+ApplyPatch KEYS-close-race-between-key-lookup-and-freeing.patch
+
+#rhbz 1124119
+ApplyPatch uas-Do-not-blacklist-ASM1153-disk-enclosures.patch
+ApplyPatch uas-Add-US_FL_NO_ATA_1X-for-2-more-Seagate-disk-encl.patch
+ApplyPatch uas-Add-no-report-opcodes-quirk-for-Simpletech-devic.patch
+
+#rhbz 1115713
+ApplyPatch samsung-laptop-Add-use_native_backlight-quirk-and-en.patch
+#rhbz 1163574
+ApplyPatch acpi-video-Add-disable_native_backlight-quirk-for-De.patch
+#rhbz 1094948
+ApplyPatch acpi-video-Add-disable_native_backlight-quirk-for-Sa.patch
+
+# Fix for big-endian arches, already upstream
+ApplyPatch mpssd-x86-only.patch
+
+# Patches from 3.18.4 stable queue (should fix i915 issues)
+ApplyPatch stable-3.18.4-queue.patch
+ApplyPatch xhci-check-if-slot-is-already-in-default-state.patch
 
 %if 0%{?aarch64patches}
 ApplyPatch kernel-arm64.patch
 %ifnarch aarch64 # this is stupid, but i want to notice before secondary koji does.
 ApplyPatch kernel-arm64.patch -R
+%else
+#  solved with SPCR in future
 %endif
 %endif
 
@@ -2000,7 +1950,7 @@ find $RPM_BUILD_ROOT/usr/include \
 
 %if %{with_perf}
 # perf tool binary and supporting scripts/binaries
-%{perf_make} DESTDIR=$RPM_BUILD_ROOT MULTILIBDIR=%{_lib} install-bin install-traceevent-plugins
+%{perf_make} DESTDIR=$RPM_BUILD_ROOT lib=%{_lib} install-bin install-traceevent-plugins
 # remove the 'trace' symlink.
 rm -f %{buildroot}%{_bindir}/trace
 
@@ -2331,6 +2281,127 @@ fi
 #                                    ||----w |
 #                                    ||     ||
 %changelog
+* Mon Jan 19 2015 Justin M. Forbes <jforbes@fedoraproject.org> - 3.18.3-201
+- Add fixes from 3.18.4 queue to fix i915 issues (rhbz 1183232)
+- xhci: Check if slot is already in default state before moving it there (rhbz 1183289)
+
+* Fri Jan 16 2015 Justin M. Forbes <jforbes@fedoraproject.org> - 3.18.3-200
+- Linux v3.18.3
+
+* Thu Jan 15 2015 Justin M. Forbes <jforbes@fedoraproject.org>
+- Build fixes for big-endian arches
+
+* Tue Jan 13 2015 Justin M. Forbes <jforbes@fedoraproject.org> - 3.18.2-200
+- Linux v3.18.2
+
+* Mon Jan 12 2015 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-9585 ASLR brute-force possible for vdso (rhbz 1181054 1181056)
+- Backlight fixes for Samsung and Dell machines (rhbz 1094948 1115713 1163574)
+- Add various UAS quirks (rhbz 1124119)
+- Add patch to fix loop in VDSO (rhbz 1178975)
+
+* Thu Jan 08 2015 Justin M. Forbes <jforbes@fedoraproject.org> - 3.17.8-300
+- Linux v3.17.8
+
+* Wed Jan 07 2015 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-9529 memory corruption or panic during key gc (rhbz 1179813 1179853)
+- Enable POWERCAP and INTEL_RAPL
+
+* Tue Jan 06 2015 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-9419 partial ASLR bypass through TLS base addr leak (rhbz 1177260 1177263)
+- CVE-2014-9428 remote DoS via batman-adv (rhbz 1178826 1178833)
+- Fix CIFS login issue (rhbz 1163927)
+
+* Mon Dec 29 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Enable F2FS (rhbz 972446)
+
+* Thu Dec 18 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-8989 userns can bypass group restrictions (rhbz 1170684 1170688)
+- Fix dm-cache crash (rhbz 1168434)
+- Fix blk-mq crash on CPU hotplug (rhbz 1175261)
+
+* Wed Dec 17 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Enable USBIP in modules-extra from Johnathan Dieter (rhbz 1169478)
+- CVE-2014-XXXX isofs: infinite loop in CE record entries (rhbz 1175235 1175250)
+
+* Tue Dec 16 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Linux v3.17.7
+- CVE-2014-8559 deadlock due to incorrect usage of rename_lock (rhbz 1159313 1173814)
+- Add patch from Josh Stone to restore var-tracking via Kconfig (rhbz 1126580)
+
+* Mon Dec 15 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Fix ppc64 boot with smt-enabled=off (rhbz 1173806)
+- CVE-2014-8133 x86: espfix(64) bypass via set_thread_area and CLONE_SETTLS (rhbz 1172797 1174374)
+
+* Fri Dec 12 2014 Kyle McMartin <kyle@fedoraproject.org>
+- build in ahci_platform on aarch64 temporarily.
+
+* Fri Dec 12 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Remove pointless warning in cfg80211 (rhbz 1172543)
+
+* Wed Dec 10 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Fix MSI issues on another Samsung pci-e SSD (rhbz 1084928)
+- Fix UAS crashes with Seagate and Fresco Logic drives (rhbz 1164945)
+- CVE-2014-8134 fix espfix for 32-bit KVM paravirt guests (rhbz 1172765 1172769)
+
+* Mon Dec 08 2014 Justin M. Forbes <jforbes@fedoraproject.org> - 3.17.6-300
+- Linux v3.17.6
+
+* Fri Dec 05 2014 Kyle McMartin <kyle@fedoraproject.org> - 3.17.4-303
+- arm64-fix-xgene_enet_process_ring.patch: fix a panic under load.
+
+* Thu Dec 04 2014 Josh Boyer <jwboyer@fedoraproject.org> - 3.17.4-302
+- CVE-2014-9090 local DoS via do_double_fault due to improper SS faults (rhbz 1170691)
+
+* Thu Dec 04 2014 Kyle McMartin <kyle@fedoraproject.org>
+- kernel-arm64.patch: update.
+- arm64-force-serial-to-be-active-consdev.patch: force serial consoles
+  to be the primary console device instead of defaulting to tty0. No
+  changes to drivers outside of ARM-land.
+- arm64-vgic-error-to-info.patch: change an error to a warning so that
+  kvm will work.
+
+* Mon Dec 01 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Add patch to quiet i915 driver on long hdps
+- Add patch to fix oops when using xpad (rhbz 1094048)
+
+* Thu Nov 27 2014 Josh Boyer <jwboyer@fedoraproject.org> - 3.17.4-301
+- Add patch to fix radeon HDMI issues (rhbz 1167511)
+
+* Mon Nov 24 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Add quirk for Laser Mouse 6000 (rhbz 1165206)
+
+* Fri Nov 21 2014 Josh Boyer <jwboyer@fedoraproject.org> - 3.17.4-300
+- Linux v3.17.4
+- Move TPM drivers to main kernel package (rhbz 1164937)
+
+* Wed Nov 19 2014 Josh Boyer <jwboyer@fedoraproject.org> - 3.17.3-301
+- Disable SERIAL_8250 on s390x (rhbz 1158848)
+
+* Fri Nov 14 2014 Josh Boyer <jwboyer@fedoraproject.org> - 3.17.3-300
+- Linux v3.17.3
+- Quiet WARN in i915 edp VDD handling
+- Enable I40EVF driver (rhbz 1164029)
+
+* Thu Nov 13 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Add patch for MS Surface Pro 3 Type Cover (rhbz 1135338)
+- CVE-2014-7843 aarch64: copying from /dev/zero causes local DoS (rhbz 1163744 1163745)
+- CVE-2014-7842 kvm: reporting emulation failures to userspace (rhbz 1163762 1163767)
+
+* Wed Nov 12 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2014-7841 sctp: NULL ptr deref on malformed packet (rhbz 1163087 1163095)
+
+* Mon Nov 10 2014 Josh Boyer <jwboyer@fedoraproject.org> - 3.17.2-301
+- Fix Samsung pci-e SSD handling on some macbooks (rhbz 1161805)
+- Add patch to fix crypto allocation issues on PAGE_SIZE > 4k
+
+* Fri Nov 07 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Fix iwlwifi oops (rhbz 1151836)
+- CVE-2014-7826 CVE-2014-7825 insufficient syscall number validation in perf and ftrace subsystems (rhbz 1161565 1161572)
+
+* Mon Nov 03 2014 Josh Boyer <jwboyer@fedoraproject.org>
+- Fix early ucode crash on 32-bit AMD machines (rhbz 1159592)
+
 * Thu Oct 30 2014 Josh Boyer <jwboyer@fedoraproject.org> - 3.17.2-300
 - Linux v3.17.2
 
