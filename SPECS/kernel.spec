@@ -42,7 +42,7 @@ Summary: The Linux kernel
 # For non-released -rc kernels, this will be appended after the rcX and
 # gitX tags, so a 3 here would become part of release "0.rcX.gitX.3"
 #
-%global baserelease 201
+%global baserelease 200
 %global fedora_build %{baserelease}
 
 # base_sublevel is the kernel version we're starting with and patching
@@ -54,7 +54,7 @@ Summary: The Linux kernel
 %if 0%{?released_kernel}
 
 # Do we have a -stable update to apply?
-%define stable_update 3
+%define stable_update 6
 # Set rpm version accordingly
 %if 0%{?stable_update}
 %define stablerev %{stable_update}
@@ -553,8 +553,8 @@ Patch1019: Add-sysrq-option-to-disable-secure-boot-mode.patch
 
 # nouveau + drm fixes
 # intel drm is all merged upstream
-Patch1826: drm-i915-hush-check-crtc-state.patch
-Patch1827: drm-i915-Don-t-WARN-in-edp_panel_vdd_off.patch
+Patch1826: drm-i915-tame-the-chattermouth-v2.patch
+Patch1827: drm-i915-Disable-verbose-state-checks.patch
 
 # Quiet boot fixes
 
@@ -609,32 +609,15 @@ Patch26058: asus-nb-wmi-Add-wapf4-quirk-for-the-X550VB.patch
 #rhbz 1135338
 Patch26090: HID-add-support-for-MS-Surface-Pro-3-Type-Cover.patch
 
-#rhbz 1164945
-Patch26092: xhci-Add-broken-streams-quirk-for-Fresco-Logic-FL100.patch
-Patch26093: uas-Add-US_FL_NO_ATA_1X-for-Seagate-devices-with-usb.patch
-Patch26094: uas-Add-US_FL_NO_REPORT_OPCODES-for-JMicron-JMS566-w.patch
-
-#rhbz 1172543
-Patch26096: cfg80211-don-t-WARN-about-two-consecutive-Country-IE.patch
-
 #rhbz 1173806
 Patch26101: powerpc-powernv-force-all-CPUs-to-be-bootable.patch
-
-Patch26107: uapi-linux-target_core_user.h-fix-headers_install.sh.patch
 
 #rhbz 1163927
 Patch26121: Set-UID-in-sess_auth_rawntlmssp_authenticate-too.patch
 
-#CVE-2014-9428 rhbz 1178826,1178833
-Patch26122: batman-adv-Calculate-extra-tail-size-based-on-queued.patch
-
-#CVE-2014-9529 rhbz 1179813 1179853
-Patch26124: KEYS-close-race-between-key-lookup-and-freeing.patch
-
 #rhbz 1124119
 Patch26126: uas-Do-not-blacklist-ASM1153-disk-enclosures.patch
 Patch26127: uas-Add-US_FL_NO_ATA_1X-for-2-more-Seagate-disk-encl.patch
-Patch26128: uas-Add-no-report-opcodes-quirk-for-Simpletech-devic.patch
 
 #rhbz 1115713
 Patch26129: samsung-laptop-Add-use_native_backlight-quirk-and-en.patch
@@ -649,9 +632,11 @@ Patch30000: kernel-arm64.patch
 # Fix for big-endian arches, already upstream
 Patch30001: mpssd-x86-only.patch
 
-# Patches from 3.18.4 stable queue (should fix i915 issues)
-Patch30002: stable-3.18.4-queue.patch
-Patch30003: xhci-check-if-slot-is-already-in-default-state.patch
+# rhbz 1183744 1188347
+Patch30002: ipv4-try-to-cache-dst_entries-which-would-cause-a-re.patch
+
+#rhbz 1188074
+Patch30003: 0001-ntp-Fixup-adjtimex-freq-validation-on-32bit-systems.patch
 
 # END OF PATCH DEFINITIONS
 
@@ -1334,8 +1319,8 @@ ApplyPatch Add-sysrq-option-to-disable-secure-boot-mode.patch
 # Nouveau DRM
 
 # Intel DRM
-ApplyPatch drm-i915-hush-check-crtc-state.patch
-ApplyPatch drm-i915-Don-t-WARN-in-edp_panel_vdd_off.patch
+ApplyPatch drm-i915-tame-the-chattermouth-v2.patch
+ApplyPatch drm-i915-Disable-verbose-state-checks.patch 
 
 # Radeon DRM
 
@@ -1370,32 +1355,15 @@ ApplyPatch asus-nb-wmi-Add-wapf4-quirk-for-the-X550VB.patch
 #rhbz 1135338
 ApplyPatch HID-add-support-for-MS-Surface-Pro-3-Type-Cover.patch
 
-#rhbz 1164945
-ApplyPatch xhci-Add-broken-streams-quirk-for-Fresco-Logic-FL100.patch
-ApplyPatch uas-Add-US_FL_NO_ATA_1X-for-Seagate-devices-with-usb.patch
-ApplyPatch uas-Add-US_FL_NO_REPORT_OPCODES-for-JMicron-JMS566-w.patch
-
-#rhbz 1172543
-ApplyPatch cfg80211-don-t-WARN-about-two-consecutive-Country-IE.patch
-
 #rhbz 1173806
 ApplyPatch powerpc-powernv-force-all-CPUs-to-be-bootable.patch
-
-ApplyPatch uapi-linux-target_core_user.h-fix-headers_install.sh.patch
 
 #rhbz 1163927
 ApplyPatch Set-UID-in-sess_auth_rawntlmssp_authenticate-too.patch
 
-#CVE-2014-9428 rhbz 1178826,1178833
-ApplyPatch batman-adv-Calculate-extra-tail-size-based-on-queued.patch
-
-#CVE-2014-9529 rhbz 1179813 1179853
-ApplyPatch KEYS-close-race-between-key-lookup-and-freeing.patch
-
 #rhbz 1124119
 ApplyPatch uas-Do-not-blacklist-ASM1153-disk-enclosures.patch
 ApplyPatch uas-Add-US_FL_NO_ATA_1X-for-2-more-Seagate-disk-encl.patch
-ApplyPatch uas-Add-no-report-opcodes-quirk-for-Simpletech-devic.patch
 
 #rhbz 1115713
 ApplyPatch samsung-laptop-Add-use_native_backlight-quirk-and-en.patch
@@ -1407,9 +1375,11 @@ ApplyPatch acpi-video-Add-disable_native_backlight-quirk-for-Sa.patch
 # Fix for big-endian arches, already upstream
 ApplyPatch mpssd-x86-only.patch
 
-# Patches from 3.18.4 stable queue (should fix i915 issues)
-ApplyPatch stable-3.18.4-queue.patch
-ApplyPatch xhci-check-if-slot-is-already-in-default-state.patch
+# rhbz 1183744 1188347
+ApplyPatch ipv4-try-to-cache-dst_entries-which-would-cause-a-re.patch
+
+#rhbz 1188074
+ApplyPatch 0001-ntp-Fixup-adjtimex-freq-validation-on-32bit-systems.patch
 
 %if 0%{?aarch64patches}
 ApplyPatch kernel-arm64.patch
@@ -2281,6 +2251,28 @@ fi
 #                                    ||----w |
 #                                    ||     ||
 %changelog
+* Fri Feb 06 2015 Justin M. Forbes <jforbes@fedoraproject.org> - 3.18.6-200
+- Linux v3.18.6
+
+* Mon Feb 02 2015 Justin M. Forbes <jforbes@fedoraproject.org> - 3.18.5-201
+- Fixup adjtimex freq validation on 32bit systems (rhbz 1188074)
+
+* Mon Feb 02 2015 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-XXXX-XXX DoS due to routing packets to too many different dsts/too fast (rhbz 1183744 1188347)
+
+* Fri Jan 30 2015 Justin M. Forbes <jforbes@fedoraproject.org> - 3.18.5-200
+- Linux v3.18.5
+
+* Thu Jan 29 2015 Josh Boyer <jwboyer@fedoraproject.org>
+- Backport patch from Rob Clark to toggle i915 state machine checks
+- Disable i915 state checks
+
+* Tue Jan 27 2015 Justin M. Forbes <jforbes@fedoraproject.org> - 3.18.4-200
+- Linux v3.18.4
+
+* Tue Jan 27 2015 Josh Boyer <jwboyer@fedoraproject.org>
+- CVE-2015-0239 kvm: insufficient sysenter emulation from 16-bit (rhbz 1186448 1186453)
+
 * Mon Jan 19 2015 Justin M. Forbes <jforbes@fedoraproject.org> - 3.18.3-201
 - Add fixes from 3.18.4 queue to fix i915 issues (rhbz 1183232)
 - xhci: Check if slot is already in default state before moving it there (rhbz 1183289)
